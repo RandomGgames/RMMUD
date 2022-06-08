@@ -91,8 +91,10 @@ organized_config = {} # {'1.18.2': {'fabric_api': ['mods']}}
 for instance in config['instances']:
 	version = instance['version']
 	directory = instance['directory']
+	
 	if version not in organized_config:
 		organized_config[version] = {}
+	
 	for mod_link in instance['mod_links']:
 		if mod_link[0:45] == 'https://www.curseforge.com/minecraft/mc-mods/':
 			if mod_link[-1] != '/':
@@ -125,7 +127,6 @@ for instance in config['instances']:
 	version = instance['version']
 	if version not in versions:
 		versions.append(version)
-#print(f"{versions = }")
 
 directories = []
 for version in versions:
@@ -134,7 +135,6 @@ for instance in config['instances']:
 	directory = instance['directory']
 	if directory not in directories:
 		directories.append(directory)
-#print(f"{directories = }")
 
 for directory in directories:
 	cache = {}
