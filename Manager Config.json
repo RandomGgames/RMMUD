@@ -1,0 +1,23 @@
+{
+	"x-api-key": "REPLACE THIS WITH YOUR OWN API KEY!! GET FROM HTTPS://CONSOLE.CURSEFORGE.COM/?#/API-KEYS",
+	"download_mods_location": "mod_downloads",
+	"instances": [
+		{
+			"directory": "C:/Users/EXAMPLE_USER/AppData/Roaming/.minecraft/mods",
+			"version": "1.19",
+			"mod_links": [
+				"https://www.curseforge.com/minecraft/mc-mods/fabric-api",
+				"https://www.curseforge.com/minecraft/mc-mods/modmenu"
+			]
+		},
+		{
+			"directory": "C:/Users/EXAMPLE_USER/Documents/Survival Server/mods",
+			"version": "1.19",
+			"mod_links": [
+				"https://www.curseforge.com/minecraft/mc-mods/carpet",
+				"https://www.curseforge.com/minecraft/mc-mods/fabric-api",
+				"https://www.curseforge.com/minecraft/mc-mods/universal-graves"
+			]
+		}
+	]
+}
