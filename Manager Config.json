@@ -3,7 +3,7 @@
 	"download_mods_location": "mod_downloads",
 	"instances": [
 		{
-			"directory": "EXAMPLE MODS DIRECTORY (MAKE SURE TO USE / NOT \!!: C:/Users/EXAMPLE_USER/AppData/Roaming/.minecraft/mods",
+			"directory": "EXAMPLE MODS DIRECTORY (MAKE SURE TO USE / NOT \\!: C:/Users/EXAMPLE_USER/AppData/Roaming/.minecraft/mods",
 			"version": "1.19",
 			"mod_links": [
 				"https://www.curseforge.com/minecraft/mc-mods/fabric-api",
