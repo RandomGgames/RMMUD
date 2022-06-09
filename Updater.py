@@ -53,17 +53,15 @@ class CurseforgeMod:
 				try:
 					open(f"{download_location}/{file_name}", 'wb').write(requests.get(self.download_url).content)
 					log(f"[CurseforgeMod.downloadLatestFile/INFO] Downloaded {self.version} mod \"{file_name}\"")
-					return f"{download_location}/{file_name}"
+					for copy_location in copy_locations:
+						try:
+							if not os.path.exists(f"{copy_location}/{file_name}"):
+								shutil.copyfile(f"{download_location}/{file_name}", f"{copy_location}/{file_name}")
+								log(f"[CurseforgeMod.downloadLatestFile/INFO] Copied \"{download_location}/{file_name}\" to \"{copy_location}\"")
+							#else: log(f"[CurseforgeMod.downloadLatestFile/INFO] Directory \"{copy_location}\" already contains \"{file_name}\"")
+						except Exception as e: log(f"[CurseforgeMod.downloadLatestFile/WARN] Could not copy mod \"{download_location}/{file_name}\" to \"{copy_location}\". {e}")
 				except Exception as e: log(f"[CurseforgeMod.downloadLatestFile/WARN] Error downloading {self.url}. {e}")
 			#else: log(f"[CurseforgeMod.downloadLatestFile/INFO] Already have latest mod {file_name}")
-			if os.path.exists(f"{download_location}/{file_name}"):
-				for copy_location in copy_locations:
-					try:
-						if not os.path.exists(f"{copy_location}/{file_name}"):
-							shutil.copyfile(f"{download_location}/{file_name}", f"{copy_location}/{file_name}")
-							log(f"[CurseforgeMod.downloadLatestFile/INFO] Copied \"{download_location}/{file_name}\" to \"{copy_location}\"")
-						#else: log(f"[CurseforgeMod.downloadLatestFile/INFO] Directory \"{copy_location}\" already contains \"{file_name}\"")
-					except Exception as e: log(f"[CurseforgeMod.downloadLatestFile/WARN] Could not copy mod \"{download_location}/{file_name}\" to \"{copy_location}\". {e}")
 		else: return None
 
 
@@ -151,8 +149,8 @@ for directory in directories:
 		else:
 			if tmodified > cache[mod_id]['tmodified']:
 				os.remove(cache[mod_id]['path'])
-				cache[mod_id] = {'path': path, 'tmodified': tmodified}
 				log(f"[DeleteOldMods/INFO] Deleted {cache[mod_id]['path']}")
+				cache[mod_id] = {'path': path, 'tmodified': tmodified}
 			else:
 				os.remove(path)
 				log(f"[DeleteOldMods/INFO] Deleted {path}")
