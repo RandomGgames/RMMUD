@@ -15,8 +15,7 @@
 			"version": "1.19",
 			"mod_links": [
 				"https://www.curseforge.com/minecraft/mc-mods/carpet",
-				"https://www.curseforge.com/minecraft/mc-mods/fabric-api",
-				"https://www.curseforge.com/minecraft/mc-mods/universal-graves"
+				"https://www.curseforge.com/minecraft/mc-mods/fabric-api"
 			]
 		}
 	]
