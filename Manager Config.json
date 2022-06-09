@@ -1,5 +1,5 @@
 {
-	"x-api-key": "REPLACE THIS WITH YOUR OWN API KEY!! GET FROM HTTPS://CONSOLE.CURSEFORGE.COM/?#/API-KEYS",
+	"x-api-key": "REPLACE THIS WITH YOUR OWN CURSEFORGE API KEY!",
 	"download_mods_location": "mod_downloads",
 	"instances": [
 		{
