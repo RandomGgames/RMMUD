@@ -2,11 +2,11 @@ import json
 import requests
 import os
 import datetime
-run_time = datetime.datetime.now().strftime("%Y-%m-%d")
 from zipfile import ZipFile
 import shutil
-if os.path.exists('logs/latest.log'): open('logs/latest.log', 'w').close() #Clear latest.log
+if os.path.exists('logs/latest.log'): open('logs/latest.log', 'w').close()
 
+run_time = datetime.datetime.now().strftime("%Y-%m-%d")
 def log(text):
 	"""
 	Prints text to the console and appends date, time, and text to a logs.txt file text. class str. The text to log
@@ -45,7 +45,6 @@ class CurseforgeMod:
 	def __str__(self):
 		return {'data': self.data, 'id': self.id, 'slug': self.slug, 'url': self.url, 'files': self.files, 'download_url': self.download_url}
 
-	pass #REWORK downloadLatestFile INTO SEPERATE FUNCTIONS WITHIN CLASS
 	def downloadLatestFile(self, download_location, copy_locations):
 		if self.download_url:
 			file_name = self.files[0]['fileName']
@@ -91,7 +90,7 @@ if HAD_ERROR:
 
 """CREATING ORGANIZED MOD DIRECTORY"""
 log("[INFO] PROCESSING CONFIG")
-organized_config = {} # {'1.18.2': {'fabric_api': ['mods']}}
+organized_config = {}
 for instance in config['instances']:
 	version = instance['version']
 	directory = instance['directory']
@@ -116,7 +115,6 @@ for version in organized_config:
 		if not os.path.exists(f"{config['download_mods_location']}/{version}"): os.makedirs(f"{config['download_mods_location']}/{version}")
 	except Exception as e:
 		logExit('	[WARN]	FATAL: Could not generate folders to download mods into.')
-#print(f"Organized_config: {json.dumps(organized_config)}")
 
 
 """UPDATING MODS"""
