@@ -1,21 +1,20 @@
 import json
-from msilib import _directories
 import requests
 import os
 import datetime
-run_time = datetime.datetime.now().strftime("%Y-%m-%d %H-%M-%S")
+run_time = datetime.datetime.now().strftime("%Y-%m-%d")
 from zipfile import ZipFile
 import shutil
+if os.path.exists('logs/latest.log'): open('logs/latest.log', 'w').close() #Clear latest.log
 
 def log(text):
 	"""
 	Prints text to the console and appends date, time, and text to a logs.txt file text. class str. The text to log
 	"""
-	#timestamp = (datetime.datetime.now().strftime("%b %d, %Y @ %I:%M %Ss %p")) #Formated time. Example output: Jan 14, 2021 @ 12:02 30s AM
 	if not os.path.exists('logs'): os.makedirs('logs')
-	timestamp = (datetime.datetime.now()) # 2022-06-07 15:38:00.960363
 	print(str(text))
-	with open(f"logs/{run_time}.log", "a", encoding="UTF-8") as file: file.write(f"[{timestamp}] {str(text)}\n")
+	with open(f"logs/{run_time}.log", "a", encoding="UTF-8") as file: file.write(f"{str(text)}\n")
+	with open(f"logs/latest.log", "a", encoding="UTF-8") as file: file.write(f"{str(text)}\n")
 
 def logExit(text):
 	log(text)
@@ -25,8 +24,9 @@ class CurseforgeMod:
 	def __init__(self, slug, version):
 		data = requests.get('https://api.curseforge.com/v1/mods/search', params = {'gameId': '432','slug': slug, 'classId': '6'}, headers = headers).json()['data']
 		try: self.data = data[0]
-		except: logExit(f"[CurseforgeMod.files/WARN] FATAL ERROR: Could not find mod \"https://www.curseforge.com/minecraft/mc-mods/{slug}\". Please make sure the URL is still valid.")
+		except: logExit(f"		[WARN] FATAL: Could not find mod \"https://www.curseforge.com/minecraft/mc-mods/{slug}\". Please make sure the URL is still valid.")
 		self.id = self.data['id']
+		self.slug = slug
 		self.url = self.data['links']['websiteUrl']
 		self.version = version
 		
@@ -40,10 +40,10 @@ class CurseforgeMod:
 			else: self.download_url = download_url.json()['data']
 		else:
 			self.download_url = None
-			log(f"[CurseforgeMod.files/WARN] Cannot find {self.version} file for {self.url}")
+			log(f"		[WARN] Cannot find {self.version} file for {self.url}")
 
 	def __str__(self):
-		return {'data': self.data, 'id': self.id, 'url': self.url, 'files': self.files, 'download_url': self.download_url}
+		return {'data': self.data, 'id': self.id, 'slug': self.slug, 'url': self.url, 'files': self.files, 'download_url': self.download_url}
 
 	pass #REWORK downloadLatestFile INTO SEPERATE FUNCTIONS WITHIN CLASS
 	def downloadLatestFile(self, download_location, copy_locations):
@@ -52,40 +52,46 @@ class CurseforgeMod:
 			if not os.path.exists(f"{download_location}/{file_name}"):
 				try:
 					open(f"{download_location}/{file_name}", 'wb').write(requests.get(self.download_url).content)
-					log(f"[CurseforgeMod.downloadLatestFile/INFO] Downloaded {self.version} mod \"{file_name}\"")
+					log(f"		[INFO] Downloaded {self.version} mod \"{file_name}\"")
 					for copy_location in copy_locations:
 						try:
 							if not os.path.exists(f"{copy_location}/{file_name}"):
 								shutil.copyfile(f"{download_location}/{file_name}", f"{copy_location}/{file_name}")
-								log(f"[CurseforgeMod.downloadLatestFile/INFO] Copied \"{download_location}/{file_name}\" to \"{copy_location}\"")
-							#else: log(f"[CurseforgeMod.downloadLatestFile/INFO] Directory \"{copy_location}\" already contains \"{file_name}\"")
-						except Exception as e: log(f"[CurseforgeMod.downloadLatestFile/WARN] Could not copy mod \"{download_location}/{file_name}\" to \"{copy_location}\". {e}")
-				except Exception as e: log(f"[CurseforgeMod.downloadLatestFile/WARN] Error downloading {self.url}. {e}")
-			#else: log(f"[CurseforgeMod.downloadLatestFile/INFO] Already have latest mod {file_name}")
+								log(f"		[INFO] Copied \"{download_location}/{file_name}\" to \"{copy_location}\"")
+						except Exception as e: log(f"		[WARN] Could not copy mod \"{download_location}/{file_name}\" to \"{copy_location}\". {e}")
+				except Exception as e: log(f"		[WARN] Error downloading {self.url}. {e}")
+			else: log(f"		Already up to date.")
 		else: return None
 
 
+log(f"[{datetime.datetime.now()}] RUNNING MOD UPDATER")
+
+
 """LOAD CONFIG"""
+log("[INFO] LOADING CONFIG")
 try:
 	with open('Manager Config.json') as f: config = json.load(f)
+	log('	Config has been read')
 except Exception as e:
-	logExit(f'[Load Config/WARN] FATAL ERROR: Loading config file. {e}')
+	logExit(f'	[WARN] FATAL: Loading config file. {e}')
 if len(config['x-api-key']) != 60 or config['x-api-key'][:7] != '$2a$10$':
-	logExit("[Load Config/WARN] FATAL ERROR: x-api-key doesn't look valid. Please provide a valid API key.")
+	logExit("	[WARN] FATAL: x-api-key doesn't look valid. Please provide a valid API key.")
 headers = {'Accept': 'application/json', 'x-api-key': config['x-api-key']}
 
 HAD_ERROR = False
 for instance in config['instances']:
 	if not os.path.isdir(instance['directory']):
 		HAD_ERROR = True
-		log(f"[Load Config/WARN] Location \"{instance['directory']}\" is invalid/doesn't exist!")
+		log(f"	[WARN] Location \"{instance['directory']}\" is invalid/doesn't exist!")
+	else:
+		log(f"	Found {instance['directory']}")
 if HAD_ERROR:
-	logExit('[Load Config/WARN] FATAL ERROR: Cannot continue until directories listed above can be found.')
+	logExit('	[WARN] FATAL: Cannot continue until directories listed above can be found.')
 
 
 """CREATING ORGANIZED MOD DIRECTORY"""
+log("[INFO] PROCESSING CONFIG")
 organized_config = {} # {'1.18.2': {'fabric_api': ['mods']}}
-
 for instance in config['instances']:
 	version = instance['version']
 	directory = instance['directory']
@@ -101,25 +107,29 @@ for instance in config['instances']:
 					if slug not in organized_config[version]:
 						organized_config[version][slug] = {'directories': []}
 					organized_config[version][slug]['directories'].append(directory)
-				else: log(f'[Organizing Config/WARN] Invlalid slug: "{slug}"')
-			else: log(f'[Organizing Config/WARN] Remove trailing "/" at the end of the url! "{mod_link}"')
-		else: log(f'[Organizing Config/WARN] "{mod_link}" must be a curseforge mod link.')
+				else: log(f'	[WARN] Invlalid slug: "{slug}"')
+			else: log(f'	[WARN] Remove trailing "/" at the end of the url! "{mod_link}"')
+		else: log(f'	[WARN] "{mod_link}" is not a curseforge mod and thus cannot be auto-downloaded.')
 
 for version in organized_config:
 	try:
 		if not os.path.exists(f"{config['download_mods_location']}/{version}"): os.makedirs(f"{config['download_mods_location']}/{version}")
 	except Exception as e:
-		logExit('[Organizing Config/WARN] FATAL ERROR: Could not generate folders to download mods into.')
+		logExit('	[WARN]	FATAL: Could not generate folders to download mods into.')
 #print(f"Organized_config: {json.dumps(organized_config)}")
 
 
-"""DOWNLOADING MODS"""
+"""UPDATING MODS"""
+log("[INFO] UPDATING MODS")
 for version in organized_config:
 	for slug in organized_config[version]:
-		CurseforgeMod(slug, version).downloadLatestFile(f"{config['download_mods_location']}/{version}", organized_config[version][slug]['directories'])
+		log(f"	Processing {slug} for {version}...")
+		mod = CurseforgeMod(slug, version)
+		mod.downloadLatestFile(f"{config['download_mods_location']}/{version}", organized_config[version][slug]['directories'])
 
 
 """DELETE OLD MODS"""
+log("[INFO] DELETING OLD MODS")
 versions = []
 for instance in config['instances']:
 	version = instance['version']
@@ -134,6 +144,7 @@ for instance in config['instances']:
 	if directory not in directories:
 		directories.append(directory)
 
+count_deleted = 0
 for directory in directories:
 	cache = {}
 	for mod in [file for file in os.listdir(directory) if file.endswith(".jar")]:
@@ -149,11 +160,17 @@ for directory in directories:
 		else:
 			if tmodified > cache[mod_id]['tmodified']:
 				os.remove(cache[mod_id]['path'])
-				log(f"[DeleteOldMods/INFO] Deleted {cache[mod_id]['path']}")
+				count_deleted += 1
+				log(f"	[INFO] Deleted {cache[mod_id]['path']}")
 				cache[mod_id] = {'path': path, 'tmodified': tmodified}
 			else:
 				os.remove(path)
-				log(f"[DeleteOldMods/INFO] Deleted {path}")
+				count_deleted += 1
+				log(f"	[INFO] Deleted {path}")
+if count_deleted == 0:
+	log(f"	No old files to delete.")
+else:
+	log(f"	Deleted {count_deleted} old mod files.")
 
-
-log(f"Done")
+"""DONE"""
+log(f"[INFO] DONE\n")
