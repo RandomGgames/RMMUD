@@ -4,9 +4,9 @@ import os
 import datetime
 from zipfile import ZipFile
 import shutil
-if os.path.exists('logs/latest.log'): open('logs/latest.log', 'w').close()
 
 run_time = datetime.datetime.now().strftime("%Y-%m-%d")
+if os.path.exists('logs/latest.log'): open('logs/latest.log', 'w').close()
 def log(text):
 	"""
 	Prints text to the console and appends date, time, and text to a logs.txt file text. class str. The text to log
@@ -20,6 +20,8 @@ def logExit(text):
 	log(text)
 	exit()
 
+mods_downloaded = 0
+mods_updated = 0
 class CurseforgeMod:
 	def __init__(self, slug, version):
 		data = requests.get('https://api.curseforge.com/v1/mods/search', params = {'gameId': '432','slug': slug, 'classId': '6'}, headers = headers).json()['data']
@@ -51,6 +53,8 @@ class CurseforgeMod:
 			if not os.path.exists(f"{download_location}/{file_name}"):
 				try:
 					open(f"{download_location}/{file_name}", 'wb').write(requests.get(self.download_url).content)
+					global mods_downloaded
+					mods_downloaded += 1
 					log(f"		[INFO] Downloaded {self.version} mod \"{file_name}\"")
 				except Exception as e: log(f"		[WARN] Error downloading {self.url}. {e}")
 			#else: log(f"		Already up to date.")
@@ -58,6 +62,8 @@ class CurseforgeMod:
 				if not os.path.exists(f"{copy_location}/{file_name}"):
 					try:
 						shutil.copyfile(f"{download_location}/{file_name}", f"{copy_location}/{file_name}")
+						global mods_updated
+						mods_updated += 1
 						log(f"		[INFO] Copied \"{download_location}/{file_name}\" to \"{copy_location}\"")
 					except Exception as e: log(f"		[WARN] Could not copy mod \"{download_location}/{file_name}\" to \"{copy_location}\". {e}")
 		else: return None
@@ -125,6 +131,12 @@ for version in organized_config:
 		mod = CurseforgeMod(slug, version)
 		mod.downloadLatestFile(f"{config['download_mods_location']}/{version}", organized_config[version][slug]['directories'])
 
+if mods_downloaded == 1: log(f"	Downloaded {mods_downloaded} mod.")
+else: log(f"	Downloaded {mods_downloaded} mods.")
+
+if mods_updated == 1: log(f"	Updated {mods_updated} mod.")
+else: log(f"	Updated {mods_updated} mods.")
+
 
 """DELETE OLD MODS"""
 log("[INFO] DELETING OLD MODS")
@@ -142,7 +154,7 @@ for instance in config['instances']:
 	if directory not in directories:
 		directories.append(directory)
 
-count_deleted = 0
+mods_deleted = 0
 for directory in directories:
 	cache = {}
 	for mod in [file for file in os.listdir(directory) if file.endswith(".jar")]:
@@ -158,17 +170,17 @@ for directory in directories:
 		else:
 			if tmodified > cache[mod_id]['tmodified']:
 				os.remove(cache[mod_id]['path'])
-				count_deleted += 1
+				mods_deleted += 1
 				log(f"	[INFO] Deleted {cache[mod_id]['path']}")
 				cache[mod_id] = {'path': path, 'tmodified': tmodified}
 			else:
 				os.remove(path)
-				count_deleted += 1
+				mods_deleted += 1
 				log(f"	[INFO] Deleted {path}")
-if count_deleted == 0:
-	log(f"	No old files to delete.")
-else:
-	log(f"	Deleted {count_deleted} old mod files.")
+
+if mods_deleted == 1: log(f"	Deleted {mods_deleted} file.")
+else: log(f"	Deleted {mods_deleted} files.")
+
 
 """DONE"""
 log(f"[INFO] DONE\n")
