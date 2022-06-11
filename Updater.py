@@ -52,14 +52,14 @@ class CurseforgeMod:
 				try:
 					open(f"{download_location}/{file_name}", 'wb').write(requests.get(self.download_url).content)
 					log(f"		[INFO] Downloaded {self.version} mod \"{file_name}\"")
-					for copy_location in copy_locations:
-						try:
-							if not os.path.exists(f"{copy_location}/{file_name}"):
-								shutil.copyfile(f"{download_location}/{file_name}", f"{copy_location}/{file_name}")
-								log(f"		[INFO] Copied \"{download_location}/{file_name}\" to \"{copy_location}\"")
-						except Exception as e: log(f"		[WARN] Could not copy mod \"{download_location}/{file_name}\" to \"{copy_location}\". {e}")
 				except Exception as e: log(f"		[WARN] Error downloading {self.url}. {e}")
-			else: log(f"		Already up to date.")
+			#else: log(f"		Already up to date.")
+			for copy_location in copy_locations:
+				if not os.path.exists(f"{copy_location}/{file_name}"):
+					try:
+						shutil.copyfile(f"{download_location}/{file_name}", f"{copy_location}/{file_name}")
+						log(f"		[INFO] Copied \"{download_location}/{file_name}\" to \"{copy_location}\"")
+					except Exception as e: log(f"		[WARN] Could not copy mod \"{download_location}/{file_name}\" to \"{copy_location}\". {e}")
 		else: return None
 
 
@@ -121,7 +121,7 @@ for version in organized_config:
 log("[INFO] UPDATING MODS")
 for version in organized_config:
 	for slug in organized_config[version]:
-		log(f"	Processing {slug} for {version}...")
+		log(f"	Processing {version} {slug}...")
 		mod = CurseforgeMod(slug, version)
 		mod.downloadLatestFile(f"{config['download_mods_location']}/{version}", organized_config[version][slug]['directories'])
 
