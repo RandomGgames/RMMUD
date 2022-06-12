@@ -93,14 +93,10 @@ for instance in config['instances']:
 if HAD_ERROR:
 	logExit('	[WARN] FATAL: Cannot continue until directories listed above can be found.')
 
-
-"""CREATING ORGANIZED MOD DIRECTORY"""
-log("[INFO] PROCESSING CONFIG")
 organized_config = {}
 for instance in config['instances']:
 	version = instance['version']
 	directory = instance['directory']
-	log(f"	Loaded {directory} from config")
 	
 	if version not in organized_config:
 		organized_config[version] = {}
