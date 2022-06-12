@@ -26,7 +26,7 @@ class CurseforgeMod:
 	def __init__(self, slug, version):
 		data = requests.get('https://api.curseforge.com/v1/mods/search', params = {'gameId': '432','slug': slug, 'classId': '6'}, headers = headers).json()['data']
 		try: self.data = data[0]
-		except: logExit(f"		[WARN] FATAL: Could not find mod \"https://www.curseforge.com/minecraft/mc-mods/{slug}\". Please make sure the URL is still valid.")
+		except: logExit(f"			[WARN] FATAL: Could not find mod \"https://www.curseforge.com/minecraft/mc-mods/{slug}\". Please make sure the URL is still valid.")
 		self.id = self.data['id']
 		self.slug = slug
 		self.url = self.data['links']['websiteUrl']
@@ -42,7 +42,7 @@ class CurseforgeMod:
 			else: self.download_url = download_url.json()['data']
 		else:
 			self.download_url = None
-			log(f"		[WARN] Cannot find {self.version} file for {self.url}")
+			log(f"			[WARN] Cannot find {self.version} file for {self.url}")
 
 	def __str__(self):
 		return {'data': self.data, 'id': self.id, 'slug': self.slug, 'url': self.url, 'files': self.files, 'download_url': self.download_url}
@@ -55,17 +55,17 @@ class CurseforgeMod:
 					open(f"{download_location}/{file_name}", 'wb').write(requests.get(self.download_url).content)
 					global mods_downloaded
 					mods_downloaded += 1
-					log(f"		[INFO] Downloaded {self.version} mod \"{file_name}\"")
-				except Exception as e: log(f"		[WARN] Error downloading {self.url}. {e}")
-			#else: log(f"		Already up to date.")
+					log(f"			[INFO] Downloaded {self.version} mod \"{file_name}\"")
+				except Exception as e: log(f"			[WARN] Error downloading {self.url}. {e}")
+			else: log(f"			Already up to date.")
 			for copy_location in copy_locations:
 				if not os.path.exists(f"{copy_location}/{file_name}"):
 					try:
 						shutil.copyfile(f"{download_location}/{file_name}", f"{copy_location}/{file_name}")
 						global mods_updated
 						mods_updated += 1
-						log(f"		[INFO] Copied \"{download_location}/{file_name}\" to \"{copy_location}\"")
-					except Exception as e: log(f"		[WARN] Could not copy mod \"{download_location}/{file_name}\" to \"{copy_location}\". {e}")
+						log(f"			[INFO] Copied \"{download_location}/{file_name}\" to \"{copy_location}\"")
+					except Exception as e: log(f"			[WARN] Could not copy mod \"{download_location}/{file_name}\" to \"{copy_location}\". {e}")
 		else: return None
 
 
@@ -100,6 +100,7 @@ organized_config = {}
 for instance in config['instances']:
 	version = instance['version']
 	directory = instance['directory']
+	log(f"	Loaded {directory} from config")
 	
 	if version not in organized_config:
 		organized_config[version] = {}
@@ -123,11 +124,30 @@ for version in organized_config:
 		logExit('	[WARN]	FATAL: Could not generate folders to download mods into.')
 
 
+"""UPDATING FABRIC"""
+log("[INFO] UPDATING FABRIC")
+
+installer_version = requests.get(f"https://meta.fabricmc.net/v2/versions/installer").json()[0]['version']
+if not os.path.exists(f"{config['download_mods_location']}/fabric-installer-{installer_version}.jar"):
+	open(f"{config['download_mods_location']}/fabric-installer-{installer_version}.jar", 'wb').write(requests.get(f"https://maven.fabricmc.net/net/fabricmc/fabric-installer/{installer_version}/fabric-installer-{installer_version}.jar").content)
+	log(f"	[INFO] Downloaded {config['download_mods_location']}/fabric-installer-{installer_version}.jar")
+else:
+	log(f"	Installer already up to date")
+
+fabric_version = requests.get(f"https://meta.fabricmc.net/v2/versions/loader").json()[0]['version']
+for version in organized_config:
+	if f"fabric-loader-{fabric_version}-{version}" not in os.listdir(f"{os.getenv('APPDATA')}/.minecraft/versions"):
+		log(f"	Need to install fabric-loader-{fabric_version}-{version}")
+	else:
+		log(f"	Fabric {version} is up to date")
+
+
 """UPDATING MODS"""
 log("[INFO] UPDATING MODS")
 for version in organized_config:
+	log(f"	Processing {version} mods:")
 	for slug in organized_config[version]:
-		log(f"	Processing {version} {slug}...")
+		log(f"		Scanning {slug}")
 		mod = CurseforgeMod(slug, version)
 		mod.downloadLatestFile(f"{config['download_mods_location']}/{version}", organized_config[version][slug]['directories'])
 
