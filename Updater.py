@@ -6,12 +6,12 @@ from zipfile import ZipFile
 import shutil
 
 run_time = datetime.datetime.now().strftime("%Y-%m-%d")
-if os.path.exists('logs/latest.log'): open('logs/latest.log', 'w').close()
+if os.path.exists('mod_manager_logs/latest.log'): open('mod_manager_logs/latest.log', 'w').close()
 def log(text):
 	"""
 	Prints text to the console and appends date, time, and text to a logs.txt file text. class str. The text to log
 	"""
-	if not os.path.exists('mod_manager_logs'): os.makedirs('logs')
+	if not os.path.exists('mod_manager_logs'): os.makedirs('mod_manager_logs')
 	print(str(text))
 	with open(f"mod_manager_logs/{run_time}.log", "a", encoding="UTF-8") as file: file.write(f"{str(text)}\n")
 	with open(f"mod_manager_logs/latest.log", "a", encoding="UTF-8") as file: file.write(f"{str(text)}\n")
