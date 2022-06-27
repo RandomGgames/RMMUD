@@ -16,6 +16,7 @@ This is a python script which automatically downloads latest versions of mods an
 - [x] Fabric Modrinth mods support
 - [x] Forge Curseforge mods support
 - [x] Forge Modrinth? mods support
+- [ ] Auto-download mod dependencies
 - [ ] Auto-delete outdated mods
 - [ ] CurseForge Resource pack support
 - [ ] Curseforge Shaderpack Support
