@@ -172,10 +172,10 @@ for instance_index, instance in enumerate(instances):
 
 	elif loader == "Forge":
 		curseforge_modLoaderType = 1
-		log(f"	[WARN] Script does not currently support {loader} mods. Ignoring instance {instance_text}.")
+		log(f"	[WARN] Script does not currently support {loader} mods yet. Ignoring instance {instance_text}.")
 		
 	else:
-		log(f"	[WARN] Ignoring instance {instance_text}. Does not support {loader} loader.")
+		log(f"	[WARN] Script does not support {loader} mods. Ignoring instance {instance_text}. Suggest support via github under the issue tracker https://github.com/RandomGgames/Minecraft-Mod-Manager")
 	
 log(f"	Done")
 
