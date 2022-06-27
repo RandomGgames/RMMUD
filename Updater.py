@@ -199,23 +199,25 @@ for instance in instances:
 for directory in directories:
 	log(f"	Scanning {directory}...")
 	cache = {}
-	for mod in [file for file in os.listdir(directory) if file.endswith(".jar")]:
-		path = f"{directory}/{mod}"
-		tmodified = os.path.getmtime(path)
-		with ZipFile(path, "r") as modzip:
-			with modzip.open("fabric.mod.json", "r") as modinfo:
-				mod_id = json.load(modinfo, strict=False)["id"]
-			modinfo.close()
-		modzip.close()
-		if mod_id not in cache:
-			cache[mod_id] = {'path': path, 'tmodified': tmodified}
-		else:
-			if tmodified > cache[mod_id]['tmodified']:
-				os.remove(cache[mod_id]['path'])
-				log(f"		[INFO] Deleted {os.path.basename(cache[mod_id]['path'])}")
+	if os.path.exists(directory):
+		for mod in [file for file in os.listdir(directory) if file.endswith(".jar")]:
+			path = f"{directory}/{mod}"
+			tmodified = os.path.getmtime(path)
+			with ZipFile(path, "r") as modzip:
+				with modzip.open("fabric.mod.json", "r") as modinfo:
+					mod_id = json.load(modinfo, strict=False)["id"]
+				modinfo.close()
+			modzip.close()
+			if mod_id not in cache:
 				cache[mod_id] = {'path': path, 'tmodified': tmodified}
 			else:
-				os.remove(path)
-				log(f"		[INFO] Deleted {os.path.basename(path)}")
+				if tmodified > cache[mod_id]['tmodified']:
+					os.remove(cache[mod_id]['path'])
+					log(f"		[INFO] Deleted {os.path.basename(cache[mod_id]['path'])}")
+					cache[mod_id] = {'path': path, 'tmodified': tmodified}
+				else:
+					os.remove(path)
+					log(f"		[INFO] Deleted {os.path.basename(path)}")
+	else: log(f"		[WARN] Could not find {directory}.")
 
 log(f"	Done")
