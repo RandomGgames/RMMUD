@@ -53,7 +53,7 @@ cache = {}
 for instance_index, instance in enumerate(instances):
 	instance_text = instance_index + 1
 	try:
-		loader = instance['loader'].capitalize()
+		loader = instance['loader'].lower()
 		version = instance['version']
 		mods_directory = f"{instance['directory']}/mods"
 		links = instance['mod_links']	
@@ -73,7 +73,7 @@ for instance_index, instance in enumerate(instances):
 			log(f"	[WARN] Could not create {download_mods_location}/{loader}/{version}. {repr(e)}")
 
 	
-	if loader == "Fabric":
+	if loader == "fabric":
 		curseforge_modLoaderType = 4
 		log(f"	Updating {version} mods in {mods_directory}...")
 
@@ -88,7 +88,6 @@ for instance_index, instance in enumerate(instances):
 
 						if link not in cache:
 							log(f"			Caching {slug} for {version}...")
-							cache[link] = {"versions": {}}
 
 							curseforge_mod = requests.get("https://api.curseforge.com/v1/mods/search", params = {"gameId": "432","slug": slug, "classId": "6"}, headers = headers).json()["data"]
 							if len(curseforge_mod) > 0:
@@ -108,7 +107,9 @@ for instance_index, instance in enumerate(instances):
 										except Exception as e:
 											log(f"			[WARN] Could not download file. {repr(e)}")
 
+									cache[link] = {"versions": {}}
 									cache[link]["versions"][version] = f"{download_mods_location}/{loader}/{version}/{file_name}"
+
 								else: log(f"			[WARN] Cannot find any {version} compatable versions of this mod.")
 
 							else:
@@ -135,9 +136,8 @@ for instance_index, instance in enumerate(instances):
 						
 						if link not in cache:
 							log(f"			Caching {slug} for {version}...")
-							cache[link] = {"versions": {}}
 							
-							modrinth_files = requests.get(f'https://api.modrinth.com/v2/project/{slug}/version?game_versions=["{version}"]').json()
+							modrinth_files = requests.get(f'https://api.modrinth.com/v2/project/{slug}/version?game_versions=["{version}"]&loaders=["{loader}"]').json()
 							if len(modrinth_files) > 0:
 								latest_version = modrinth_files[0]
 								
@@ -153,10 +153,10 @@ for instance_index, instance in enumerate(instances):
 									except Exception as e:
 										log(f"			[WARN] Could not download file. {repr(e)}")
 
+								cache[link] = {"versions": {}}
 								cache[link]["versions"][version] = f"{download_mods_location}/{loader}/{version}/{file_name}"
 							
-							else:
-								log(f"			[WARN] Could not find mod {slug}. Make sure the url {link} is valid and not a redirect!")
+							else: log(f"			[WARN] Cannot find any {version} compatable versions of this mod.")
 
 						if link in cache:
 							if not os.path.exists(f"{mods_directory}/{os.path.basename(cache[link]['versions'][version])}"):
@@ -172,7 +172,7 @@ for instance_index, instance in enumerate(instances):
 				else:  log(f"	[WARN] Links must be to a mod page. {link} is not a valid mod page link.")
 
 
-	elif loader == "Forge":
+	elif loader == "forge":
 		curseforge_modLoaderType = 1
 		log(f"	[WARN] Script does not currently support {loader} mods yet. Ignoring instance {instance_text}.")
 		
@@ -191,10 +191,10 @@ for instance in instances:
 	version = instance['version']
 	loader = instance['loader'].capitalize()
 
-	if f"{config['download_mods_location']}/{loader}/{version}" not in directories:
-		directories.append(f"{config['download_mods_location']}/{loader}/{version}")
 
-	if loader == "Fabric":
+	if loader == "fabric":
+		if f"{config['download_mods_location']}/{loader}/{version}" not in directories:
+			directories.append(f"{config['download_mods_location']}/{loader}/{version}")
 		if mods_directory not in directories:
 			directories.append(mods_directory)
 
@@ -206,8 +206,11 @@ for directory in directories:
 			path = f"{directory}/{mod}"
 			tmodified = os.path.getmtime(path)
 			with ZipFile(path, "r") as modzip:
-				with modzip.open("fabric.mod.json", "r") as modinfo:
-					mod_id = json.load(modinfo, strict=False)["id"]
+				try:
+					with modzip.open("fabric.mod.json", "r") as modinfo:
+						mod_id = json.load(modinfo, strict=False)["id"]
+				except Exception as e:
+					log(f"		[WARN] Could not read the fabric.mod.json file within {path}")
 				modinfo.close()
 			modzip.close()
 			if mod_id not in cache:
