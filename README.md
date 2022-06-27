@@ -1,5 +1,5 @@
 # Minecraft Mod Manager
-A script that automatically downloads the latest version of mods into as many directories as you'd like! Perfect for keeping the mods in multiple game instances spanning different versions updated.
+This is a python script which automatically downloads latest versions of mods and copies them into as many mods folders as you set up with just one click (after configuration that is)! I specifically made this because I have many minecraft instances spanning different versions as well as having a few server folders. I've made this script so I can update the mods in all of them all at once!
 
 # Requirements
 - Python 3. https://www.python.org/downloads/
