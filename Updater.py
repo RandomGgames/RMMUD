@@ -1,4 +1,5 @@
 from ast import excepthandler
+import time
 import datetime
 import json
 import os
@@ -19,6 +20,7 @@ def log(text, end = "\n"):
 
 def logExit(text, end = "\n"):
 	log(text, end = end)
+	input("PRESS ANY KEY TO EXIT.")
 	exit()
 
 
@@ -220,4 +222,8 @@ for directory in directories:
 					log(f"		[INFO] Deleted {os.path.basename(path)}")
 	else: log(f"		[WARN] Could not find {directory}.")
 
-log(f"	Done")
+log(f"	Done\n")
+
+print("Updater will close in 10 seconds...")
+time.sleep(10)
+exit()
