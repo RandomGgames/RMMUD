@@ -3,7 +3,7 @@
 	"download_mods_location": "mod_downloads",
 	"instances": [
 		{
-			"directory": "EXAMPLE MODS DIRECTORY (DO NOT USE \ USE /): C:/Users/EXAMPLE_USER/AppData/Roaming/.minecraft/mods",
+			"directory": "EXAMPLE INSTANCE DIRECTORY (DO NOT USE \ USE /): C:/Users/EXAMPLE_USER/AppData/Roaming/.minecraft",
 			"version": "1.19",
 			"loader": "Fabric",
 		
@@ -13,7 +13,7 @@
 			]
 		},
 		{
-			"directory": "EXAMPLE: C:/Users/EXAMPLE_USER/Documents/Survival Server/mods",
+			"directory": "EXAMPLE: C:/Users/EXAMPLE_USER/Documents/Survival Server",
 			"version": "1.19",
 			"loader": "Fabric",
 			"mod_links": [
