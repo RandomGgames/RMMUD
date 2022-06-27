@@ -5,6 +5,8 @@
 		{
 			"directory": "EXAMPLE MODS DIRECTORY (DO NOT USE \ USE /): C:/Users/EXAMPLE_USER/AppData/Roaming/.minecraft/mods",
 			"version": "1.19",
+			"loader": "Fabric",
+		
 			"mod_links": [
 				"https://www.curseforge.com/minecraft/mc-mods/fabric-api",
 				"https://www.curseforge.com/minecraft/mc-mods/modmenu"
@@ -13,6 +15,7 @@
 		{
 			"directory": "EXAMPLE: C:/Users/EXAMPLE_USER/Documents/Survival Server/mods",
 			"version": "1.19",
+			"loader": "Fabric",
 			"mod_links": [
 				"https://www.curseforge.com/minecraft/mc-mods/carpet",
 				"https://www.curseforge.com/minecraft/mc-mods/fabric-api"
