@@ -10,3 +10,11 @@ A script that automatically downloads the latest version of mods into as many di
 - Extract files into a folder
 - Open the "Manager Config.json" file and configure settings
 - Run "Updater.py"
+
+# ToDo:
+- [x] Fabric Curseforge mods support
+- [x] Fabric Modrinth mods support
+- [x] Forge Curseforge mods support
+- [x] Forge Modrinth? mods support
+- [ ] CurseForge Resource pack support
+- [ ] Curseforge Shaderpack Support
