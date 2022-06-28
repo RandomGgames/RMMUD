@@ -1,4 +1,3 @@
-from ast import excepthandler
 import time
 import datetime
 import json
@@ -95,10 +94,13 @@ for instance_index, instance in enumerate(instances):
 							
 								curseforge_files = requests.get(f"https://api.curseforge.com/v1/mods/{curseforge_id}/files", params = {"gameVersion": version, "modLoaderType": curseforge_modLoaderType}, headers = headers).json()["data"]
 								if len(curseforge_files) > 0:
+									
 									latest_curseforge_file = curseforge_files[0]
 									file_name = latest_curseforge_file["fileName"]
 									download_url = latest_curseforge_file["downloadUrl"]
-									if download_url == "": download_url = f"https://edge.forgecdn.net/files/{latest_curseforge_file['id'][0:4]}/{latest_curseforge_file['id'][4:7]}/{file_name}"
+									if download_url == None:
+										download_url = f"https://edge.forgecdn.net/files/{str(latest_curseforge_file['id'])[0:4]}/{str(latest_curseforge_file['id'])[4:7]}/{file_name}"
+										pass
 
 									if not os.path.exists(f"{download_mods_location}/{loader}/{version}/{file_name}"):
 										try:
@@ -137,15 +139,17 @@ for instance_index, instance in enumerate(instances):
 						if link not in cache:
 							log(f"			Caching {slug} for {version}...")
 							
-							modrinth_files = requests.get(f'https://api.modrinth.com/v2/project/{slug}/version?game_versions=["{version}"]&loaders=["{loader}"]').json()
-							if len(modrinth_files) > 0:
-								latest_version = modrinth_files[0]
+							modrinth_versions = requests.get(f'https://api.modrinth.com/v2/project/{slug}/version?game_versions=["{version}"]&loaders=["{loader}"]').json()
+							if len(modrinth_versions) > 0:
+								latest_modrinth_version = modrinth_versions[0]
+								files = latest_modrinth_version["files"]
+
+								if any(file["primary"] for file in files):
+									files = [file for file in files if file["primary"] == True]
+
+								file_name = files[0]['filename']
+								download_url = files[0]['url']
 								
-								project_id = latest_version['project_id']
-								mod_version = latest_version['version_number']
-								file_name = latest_version['files'][0]['filename']
-								download_url = f'https://cdn.modrinth.com/data/{project_id}/versions/{mod_version}/{file_name}'
-							
 								if not os.path.exists(f'{download_mods_location}/{loader}/{version}/{file_name}'):
 									try:
 										open(f"{download_mods_location}/{loader}/{version}/{file_name}", "wb").write(requests.get(download_url).content)
@@ -189,14 +193,17 @@ directories = []
 for instance in instances:
 	mods_directory = f"{instance['directory']}/mods"
 	version = instance['version']
-	loader = instance['loader'].capitalize()
-
-
+	loader = instance['loader'].lower()
+	
 	if loader == "fabric":
 		if f"{config['download_mods_location']}/{loader}/{version}" not in directories:
 			directories.append(f"{config['download_mods_location']}/{loader}/{version}")
 		if mods_directory not in directories:
 			directories.append(mods_directory)
+
+	elif loader == "forge": log(f"	[WARN] Loader does not support {loader} yet.")
+	
+	else: log(f"	[WARN] Loader does not support {loader}.")
 
 for directory in directories:
 	log(f"	Scanning {directory}...")
@@ -224,6 +231,7 @@ for directory in directories:
 					os.remove(path)
 					log(f"		[INFO] Deleted {os.path.basename(path)}")
 	else: log(f"		[WARN] Could not find {directory}.")
+
 
 log(f"	Done\n")
 
