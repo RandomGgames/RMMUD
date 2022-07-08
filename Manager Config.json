@@ -1,24 +1,15 @@
 {
-	"x-api-key": "REPLACE THIS WITH YOUR OWN CURSEFORGE API KEY!",
+	"x-api-key": "IF YOU USE CURSEFORGE MOD LINKS, PUT API KEY HERE. OTHERWISE, LEAVE BLANK OR LEAVE THIS TEXT",
 	"download_mods_location": "mod_downloads",
 	"instances": [
 		{
-			"directory": "EXAMPLE INSTANCE DIRECTORY (DO NOT USE \ USE /): C:/Users/EXAMPLE_USER/AppData/Roaming/.minecraft",
+			"directory": "(REMOVE THIS TEXT. DO NOT USE \ USE /) C:/Users/EXAMPLE_USER/AppData/Roaming/.minecraft",
 			"version": "1.19",
 			"loader": "Fabric",
 		
 			"mod_links": [
 				"https://www.curseforge.com/minecraft/mc-mods/fabric-api",
 				"https://www.curseforge.com/minecraft/mc-mods/modmenu"
-			]
-		},
-		{
-			"directory": "EXAMPLE: C:/Users/EXAMPLE_USER/Documents/Survival Server",
-			"version": "1.19",
-			"loader": "Fabric",
-			"mod_links": [
-				"https://www.curseforge.com/minecraft/mc-mods/carpet",
-				"https://www.curseforge.com/minecraft/mc-mods/fabric-api"
 			]
 		}
 	]
