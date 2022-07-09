@@ -94,6 +94,8 @@ for instance_index, instance in enumerate(instances):
 							
 								curseforge_files = requests.get(f"https://api.curseforge.com/v1/mods/{curseforge_id}/files", params = {"gameVersion": version, "modLoaderType": curseforge_modLoaderType}, headers = headers).json()["data"]
 								if len(curseforge_files) > 0:
+									curseforge_files = list(file for file in curseforge_files if version in file["gameVersions"])
+
 									
 									latest_curseforge_file = curseforge_files[0]
 									file_name = latest_curseforge_file["fileName"]
