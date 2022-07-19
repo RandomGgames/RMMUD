@@ -85,7 +85,7 @@ for instance_index, instance in enumerate(instances):
 					if not any(x in slug for x in ["/", " ", "\\"]):
 						log(f"		Updating: {slug}")
 
-						if link not in cache:
+						if link not in cache or version not in cache[link]['versions']:
 							log(f"			Caching {slug} for {version}...")
 
 							curseforge_mod = requests.get("https://api.curseforge.com/v1/mods/search", params = {"gameId": "432","slug": slug, "classId": "6"}, headers = headers).json()["data"]
@@ -137,7 +137,7 @@ for instance_index, instance in enumerate(instances):
 					if not any(x in slug for x in ["/", " ", "\\"]):
 						log(f"		Updating: {slug}")
 						
-						if link not in cache:
+						if link not in cache or version not in cache[link]['versions']:
 							log(f"			Caching {slug} for {version}...")
 							
 							modrinth_versions = requests.get(f'https://api.modrinth.com/v2/project/{slug}/version?game_versions=["{version}"]&loaders=["{loader}"]').json()

@@ -6,7 +6,6 @@
 			"directory": "(REMOVE THIS TEXT. DO NOT USE \ USE /) C:/Users/EXAMPLE_USER/AppData/Roaming/.minecraft",
 			"version": "1.19",
 			"loader": "Fabric",
-		
 			"mod_links": [
 				"https://www.curseforge.com/minecraft/mc-mods/fabric-api",
 				"https://www.curseforge.com/minecraft/mc-mods/modmenu"
