@@ -7,8 +7,8 @@
 			"version": "1.19",
 			"loader": "Fabric",
 			"mod_links": [
-				"https://www.curseforge.com/minecraft/mc-mods/fabric-api",
-				"https://www.curseforge.com/minecraft/mc-mods/modmenu"
+				"(EXAMPLE MOD LINK, REMOVE THIS TEXT) https://www.curseforge.com/minecraft/mc-mods/fabric-api",
+				"(EXAMPLE MOD LINK, REMOVE THIS TEXT) https://modrinth.com/mod/modmenu"
 			]
 		}
 	]

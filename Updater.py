@@ -7,7 +7,7 @@ import shutil
 from zipfile import ZipFile
 
 CHECK_FOR_UPDATES = True
-VERSION = "3.5WIP" #DO NOT CHANGE THIS YOURSELF!
+VERSION = "3.5" #DO NOT CHANGE THIS YOURSELF!
 
 run_time = datetime.now().strftime("%Y-%m-%d")
 def log(text, end = "\n"):
