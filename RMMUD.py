@@ -5,7 +5,6 @@ import json
 import logging
 log = logging.getLogger(__name__)
 import os
-import pickle
 import requests
 import shutil
 import sys
