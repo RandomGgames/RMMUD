@@ -1,4 +1,8 @@
 # Your CurseForge API key goes here.
 # Only required if using CurseForge links.
-# To get an API key: Go to https://console.curseforge.com/?#/api-keys, sign in, click API keys on the left, and copy paste the key here
+# To get an API key:
+#   Go to https://console.curseforge.com/?#/api-keys
+#   Sign in
+#   Click API keys on the left
+#   Copy paste the key into the CurseForge API Key field after the :
 CurseForge API Key:
