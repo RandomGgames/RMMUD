@@ -317,7 +317,6 @@ def deleteDuplicateMods(instances):
                     id = json.load(f, strict=False)['id']
                     ids.setdefault(id, {})
             ids[id][date_created] = mod_path
-        with open('TEMP.json', 'w') as f: json.dump(ids, f, indent="\t")
         
         for key in list(ids.keys()):
             if len(ids[key]) == 1:
@@ -353,7 +352,6 @@ def main():
     loadConfig()
     
     instances = loadInstances()
-    #with open('TEMP.json', 'w') as f: json.dump(instances, f, indent="\t")
     
     parsed_instances = parseInstances(instances)
     
