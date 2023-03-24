@@ -275,7 +275,7 @@ def downloadCurseforgeMod(mod_id, mod_loader, minecraft_version, mod_version, do
 def loadConfig(file_path: str = config_path):
     global rmmud_config
     with open(file_path, 'r') as f: rmmud_config = yaml.safe_load(f)
-    key_type_pairs = {'CurseForge API Key': str, 'Check for RMMUD Updates': bool}
+    key_type_pairs = {'CurseForge API Key': str}
     validateKeyTypes(rmmud_config, key_type_pairs)
     rmmud_config['Header'] = {'Accept': 'application/json','x-api-key': rmmud_config['CurseForge API Key']}
     return rmmud_config
