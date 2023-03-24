@@ -1,0 +1,22 @@
+Enabled: true
+Loader: Fabric
+Version: 1.19.2
+Directory: .minecraft
+Mods:
+  Asthetics:
+    Auditory:
+      - https://modrinth.com/mod/ambientsounds
+      - https://modrinth.com/mod/extrasounds
+      - https://modrinth.com/mod/presence-footsteps
+    Visuals:
+      - https://modrinth.com/mod/3dskinlayers
+      - https://modrinth.com/mod/iris
+  Libraries:
+    - https://modrinth.com/mod/fabric-api
+  Menus:
+    - https://modrinth.com/mod/modmenu
+    - https://www.curseforge.com/minecraft/mc-mods/better-advancements
+  Optimizations and Fixes:
+    - https://modrinth.com/mod/sodium
+  Privacy:
+    - https://modrinth.com/mod/no-telemetry
