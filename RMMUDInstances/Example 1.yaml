@@ -1,0 +1,8 @@
+Enabled: true
+Loader: Fabric
+Version: 1.19.4
+Directory: .minecraft
+Mods:
+  - https://modrinth.com/mod/fabric-api
+  - https://modrinth.com/mod/iris
+  - https://modrinth.com/mod/sodium
