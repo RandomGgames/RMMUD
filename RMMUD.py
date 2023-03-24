@@ -17,7 +17,7 @@ logging_level = logging.INFO
 downloads_dir = 'RMMUDDownloads'
 instances_dir = 'RMMUDInstances'
 config_path = 'RMMUDConfig.yaml'
-modrinth_header = {'User-Agent': 'RandomGgames/RMMUD/tree/dev (randomggamesofficial@gmail.com)'}
+modrinth_header = {'User-Agent': 'RandomGgames/RMMUD (randomggamesofficial@gmail.com)'}
 rmmud_config = None
 
 __version_info__ = (3, 6, 0)
