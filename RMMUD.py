@@ -214,7 +214,7 @@ def downloadCurseforgeMod(mod_id, mod_loader, minecraft_version, mod_version, do
     
     # Getting mod ID
     log.debug(f'Getting mod ID from CurseForge')
-    url = ('https://api.curseforge.com/v1/mods/search')
+    url = 'https://api.curseforge.com/v1/mods/search'
     params = {'gameId': '432','slug': mod_id, 'classId': '6'}
     try:
         response = requests.get(url, params, headers = rmmud_config['Header']).json()['data']
