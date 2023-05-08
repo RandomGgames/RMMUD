@@ -20,7 +20,7 @@ config_path = 'RMMUDConfig.yaml'
 modrinth_header = {'User-Agent': 'RandomGgames/RMMUD (randomggamesofficial@gmail.com)'}
 rmmud_config = None
 
-__version_info__ = (3, 6, 0)
+__version_info__ = (3, 6, 1)
 __version__ = '.'.join(str(x) for x in __version_info__)
 
 def validateKeyTypes(dictionary_to_check: dict, key_type_pairs: dict = None):
