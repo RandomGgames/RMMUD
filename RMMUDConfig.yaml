@@ -3,6 +3,7 @@
 # To get an API key:
 #   Go to https://console.curseforge.com/?#/api-keys
 #   Sign in
+#   Close the pop up in the middle of the screen
 #   Click API keys on the left
 #   Copy paste the key into the CurseForge API Key field after the :
-CurseForge API Key:
+CurseForge API Key: REPLACE_THIS_WITH_YOUR_API_KEY
