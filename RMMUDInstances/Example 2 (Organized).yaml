@@ -1,7 +1,7 @@
 Enabled: true
 Loader: Fabric
 Version: 1.19.2
-Directory: .minecraft
+Directory: ./.minecraft
 Mods:
   Asthetics:
     Auditory:
