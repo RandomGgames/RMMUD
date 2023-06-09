@@ -20,7 +20,7 @@ config_path = 'RMMUDConfig.yaml'
 modrinth_header = {'User-Agent': 'RandomGgames/RMMUD (randomggamesofficial@gmail.com)'}
 rmmud_config = None
 
-__version_info__ = (3, 6, 1)
+__version_info__ = (3, 6, 2)
 __version__ = '.'.join(str(x) for x in __version_info__)
 
 def validateKeyTypes(dictionary_to_check: dict, key_type_pairs: dict = None):
@@ -51,8 +51,22 @@ def extractNestedStrings(iterable):
 def readYAML(path):
     log.debug(f'Reading YAML file "{path}"')
     try:
-        with open(path, 'r') as f: read = yaml.safe_load(f)
-        return read
+        data = {}
+        with open(path, 'r') as f:
+            read = yaml.load(f, yaml.FullLoader)
+            data['Enabled'] = bool(read['Enabled'])
+            data['Loader'] = str(read['Loader'])
+            data['Directory'] = str(read['Directory'])
+            data['Mods'] = read['Mods']
+        with open(path, 'r') as f:
+            read = yaml.load(f, yaml.BaseLoader)
+            data['Version'] = str(read['Version'])
+        log.debug(f'{data["Enabled"] = }')
+        log.debug(f'{data["Loader"] = }')
+        log.debug(f'{data["Version"] = }')
+        log.debug(f'{data["Directory"] = }')
+        log.debug(f'{data["Mods"] = }')
+        return data
     except Exception as e:
         raise e
 
@@ -220,7 +234,7 @@ def downloadCurseforgeMod(mod_id, mod_loader, minecraft_version, mod_version, do
         response = requests.get(url, params, headers = rmmud_config['Header']).json()['data']
         curseforge_mod_id = response[0]['id']
     except Exception as e:
-        log.warning(f'Could not fetch CurseForge ID for "{mod_id}": {e}')
+        log.warning(f'Could not fetch CurseForge ID for "{mod_id}": {repr(e)}')
         return
     
     # Get latest or desired mod version
