@@ -9,7 +9,7 @@
 CurseForge API Key: REPLACE_THIS_WITH_YOUR_API_KEY
 
 # Option for enabling/disabling update checking. true or false (no capitals)
-Check for RMMUD Updates: false
+Check for RMMUD Updates: true
 
 # Folder location for downloading  mods into. Can be relative or absolute.
 Downloads Folder: RMMUDDownloads
