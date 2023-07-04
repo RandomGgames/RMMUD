@@ -96,7 +96,6 @@ def checkForUpdate():
     logging.info('Checking for an RMMUD update.')
     
     current_version = __version__
-    current_version_split = current_version.split('.')
     logging.debug(f'{current_version = }')
     
     try:
@@ -105,22 +104,23 @@ def checkForUpdate():
         logging.warning('Could not check for an RMMUD Update.')
         logging.exception(e)
         return None
-    github_version_split = github_version.split('.')
     logging.debug(f'{github_version = }')
     
     logging.debug('Comparing github and current versions.')
-    url = "https://github.com/RandomGgames/RMMUD/releases"
-    for i in range(3):
-        if int(github_version_split[i]) > int(current_version_split[i]):
-            open_update = input(f'There is an update available! ({current_version} (current) → {github_version} (latest)).\nDo you want to open the GitHub releases page to download it right now? (yes/no): ').lower()
-            if open_update in ("yes", "y"):
-                webbrowser.open(url)
-                exit()
-        if int(github_version_split[i]) < int(current_version_split[i]):
-            logging.info(f'You are on what seems like a work in progress version, as it is higher than the latest release. Please report any bugs onto the github page at https://github.com/RandomGgames/RMMUD')
-            return False
-    logging.info(f'You are on the latest version already.')
-    return False
+    version_check = compareVersions(github_version, __version__)
+    if version_check == "higher":
+        logging.info(f'There is an update available! ({current_version} (current) → {github_version} (latest)).\nDo you want to open the GitHub releases page to download it right now? (yes/no): ')
+        open_update = input('Open releases page? ').lower()
+        if open_update in ("yes", "y"):
+            url = "https://github.com/RandomGgames/RMMUD/releases"
+            webbrowser.open(url)
+            exit()
+    elif version_check == "lower":
+        logging.info(f'You are on what seems like a work in progress version, as it is higher than the latest release. Please report any bugs onto the github page at https://github.com/RandomGgames/RMMUD')
+        return False
+    elif version_check == "same":
+        logging.info(f'You are on the latest version already.')
+        return None
 
 def copyToFolders(file_path, destination_path):
     logging.debug(f'Copying "{file_path}" into "{destination_path}".')
