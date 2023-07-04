@@ -199,6 +199,7 @@ def loadInstances(instances_dir: str):
     
     try:
         os.makedirs(instances_dir, exist_ok=True)
+        logging.debug(f'Created folder "{instances_dir}"')
     except Exception as e:
         logging.error(f'Could not create "{instances_dir}".')
         logging.exception(e)
