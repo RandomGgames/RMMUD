@@ -50,12 +50,15 @@ def loadConfig(path = "RMMUDConfig.yaml"):
         config['CurseForge API Key'] = None
     if config['CurseForge API Key'] is not None and not isinstance(config['CurseForge API Key'], str):
         raise TypeError("Curseforge API key should be a string or None.")
+    
     config['Check for RMMUD Updates'] = config.get('Check for RMMUD Updates', True)
     if not isinstance(config['Check for RMMUD Updates'], bool):
         raise TypeError("Check for updates should be a boolean value.")
+    
     config['Downloads Folder'] = config.get('Downloads Folder', 'RMMUDDownloads')
     if not isinstance(config['Downloads Folder'], str):
         raise TypeError("Downloads folder should be a string.")
+    
     config['Instances Folder'] = config.get('Instances Folder', 'RMMUDInstances')
     if not isinstance(config['Instances Folder'], str):
         raise TypeError("Instances folder should be a string.")
@@ -118,11 +121,27 @@ def readInstanceFile(path):
     logging.debug(f'Reading instance file "{path}".')
     try:
         data = readYAML(path)
-        data['Enabled'] = data.get(data['Enabled'], False)
-        data['Loader'] = data.get(data['Loader'], None)
-        data['Directory'] = data.get(data['Directory'], None)
+        
+        data['Enabled'] = data.get('Enabled', True)
+        if not isinstance(data['Enabled'], bool):
+            raise TypeError("The Enabled option should be a boolean.")
+        
+        data['Loader'] = data.get(data['Loader'], "")
+        if not isinstance(data['Loader'], str):
+            raise TypeError("The Loader option should be a string.")
+        
+        data['Directory'] = data.get(data['Directory'], "")
+        if not isinstance(data['Directory'], str):
+            raise TypeError("The Loader option should be a string or None.")
+        
         data['Mods'] = data['Mods'] if data['Mods'] else None
-        data['Version'] = data.get(data['Version'], None)
+        if not isinstance(data['Mods'], (str, list, dict, type(None))):
+            raise TypeError("The Mods option should be either a string, list, dictionary, or None.")
+        
+        data['Version'] = data.get(data['Version'], "")
+        if not isinstance(data['Version'], str):
+            raise TypeError("The Version option should be a string.")
+        
         logging.debug(f'Done reading instance file')
         return data
     except Exception as e:
