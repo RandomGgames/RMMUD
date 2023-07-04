@@ -149,15 +149,12 @@ def loadConfigFile(path = "RMMUDConfig.yaml"):
         config['CurseForge API Key'] = None
     if config['CurseForge API Key'] is not None and not isinstance(config['CurseForge API Key'], str):
         raise TypeError("Curseforge API key should be a string or None.")
-    
     config['Check for RMMUD Updates'] = config.get('Check for RMMUD Updates', True)
     if not isinstance(config['Check for RMMUD Updates'], bool):
         raise TypeError("Check for updates should be a boolean value.")
-    
     config['Downloads Folder'] = config.get('Downloads Folder', 'RMMUDDownloads')
     if not isinstance(config['Downloads Folder'], str):
         raise TypeError("Downloads folder should be a string.")
-    
     config['Instances Folder'] = config.get('Instances Folder', 'RMMUDInstances')
     if not isinstance(config['Instances Folder'], str):
         raise TypeError("Instances folder should be a string.")
