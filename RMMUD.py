@@ -142,7 +142,7 @@ def loadConfig(path = "RMMUDConfig.yaml"):
     logging.debug(f'Done loading config.')
     return config
 
-def readInstanceFile(path):
+def loadInstanceFile(path):
     logging.debug(f'Reading instance file "{path}".')
     try:
         data = readYAML(path)
@@ -185,7 +185,7 @@ def loadInstances(instances_dir: str):
         instance_path = os.path.join(instances_dir, instance_file)
         instance_name = os.path.splitext(instance_file)[0]
         try:
-            instance = readInstanceFile(instance_path)
+            instance = loadInstanceFile(instance_path)
             if not instance['Enabled']:
                 logging.info(f'Ignoring disabled instance "{instance_file}"')
                 continue
