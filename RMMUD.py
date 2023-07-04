@@ -65,6 +65,18 @@ def checkIfZipIsCorrupted(path):
         logging.exception(e)
         raise e
 
+def getLatestReleaseVersion(tags_url = "https://api.github.com/repos/RandomGgames/RMMUD/tags"):
+    logging.debug('Getting latest github release version.')
+    try:
+        release_version = requests.get(tags_url).json()[0]["name"]
+        logging.debug(f'Done getting latest github release version ({release_version}).')
+        return release_version
+    except Exception as e:
+        logging.warning(f'Could not get latest github release version.')
+        logging.exception(e)
+        raise e
+    
+
 def checkForUpdate():
     logging.info('Checking for an RMMUD update.')
     
