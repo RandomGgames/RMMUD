@@ -215,15 +215,11 @@ def loadInstances(instances_dir: str):
                 continue
             logging.info(f'Loading enabled instance "{instance_file}"')
             instance.pop('Enabled')
-            instance['Loader'] = str(instance['Loader']).lower()
-            instance['Version'] = str(instance['Version'])
-            instance['Directory'] = str(instance['Directory'])
             enabled_instances[instance_name] = instance
         except Exception as e:
-            logging.warning(f'Could not load instance "{instance_name}"')
+            logging.warning(f'Could not load instance "{instance_name}". Ignoring this file.')
             logging.exception(e)
-            logging.warning(f'Ignoring this file.')
-            pass
+            continue
     return enabled_instances
 
 def parseInstances(instances):
