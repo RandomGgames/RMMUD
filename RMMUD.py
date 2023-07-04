@@ -66,7 +66,7 @@ def checkIfZipIsCorrupted(path):
         raise e
 
 def checkForUpdate():
-    logging.debug('Checking for an RMMUD update.')
+    logging.info('Checking for an RMMUD update.')
     
     logging.debug('Getting latest github version.')
     try:
@@ -93,9 +93,9 @@ def checkForUpdate():
                 webbrowser.open(url)
                 exit()
         if int(github_version_split[i]) < int(current_version_split[i]):
-            logging.debug(f'You are on what seems like a work in progress version, as it is higher than the latest release. Please report any bugs onto the github page at {url}')
+            logging.info(f'You are on what seems like a work in progress version, as it is higher than the latest release. Please report any bugs onto the github page at {url}')
             return
-    logging.debug(f'You are on the latest version already.')
+    logging.info(f'You are on the latest version already.')
     return
 
 def loadConfig(path = "RMMUDConfig.yaml"):
