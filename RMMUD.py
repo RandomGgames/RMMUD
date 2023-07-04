@@ -77,7 +77,7 @@ def getGithubLatestReleaseTag(tags_url = "https://api.github.com/repos/RandomGga
         logging.exception(e)
         raise e
 
-def compareVersions(compare_version: str, current_version: str = __version__):
+def compareTwoVersions(compare_version: str, current_version: str = __version__):
     logging.debug(f'Comparing two versions together')
     current_parts = current_version.split('.')
     compare_parts = compare_version.split('.')
@@ -108,7 +108,7 @@ def checkForUpdate():
     logging.debug(f'{github_version = }')
     
     logging.debug('Comparing github and current versions.')
-    version_check = compareVersions(github_version, __version__)
+    version_check = compareTwoVersions(github_version, __version__)
     if version_check == "higher":
         logging.info(f'There is an update available! ({current_version} (current) → {github_version} (latest)).\nDo you want to open the GitHub releases page to download it right now? (yes/no): ')
         open_update = input('Open releases page? ').lower()
