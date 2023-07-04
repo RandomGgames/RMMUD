@@ -109,7 +109,7 @@ def copyToFolders(file_path, destination_path):
         logging.exception(e)
         raise e
 
-def loadConfig(path = "RMMUDConfig.yaml"):
+def loadConfigFile(path = "RMMUDConfig.yaml"):
     logging.debug(f'Loading config.')
     
     try:
@@ -464,7 +464,7 @@ def deleteDuplicateMods(instances):
 def main():
     logging.debug(f'Running main body of script')
     
-    config = loadConfig()
+    config = loadConfigFile()
     
     if config['Check for RMMUD Updates']: checkForUpdate()
     
