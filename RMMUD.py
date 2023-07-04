@@ -21,6 +21,23 @@ __version__ = '.'.join(str(x) for x in __version_info__)
 # sydney = <3 for gian 4 evr
 # ^^^ My girlfriend wrote this for me, I am not removing it.
 
+def extractNestedStrings(iterable):
+    logging.debug('Extracting nested strings')
+    def extract(iterable):
+        strings = []
+        if type(iterable) is dict:
+            for value in iterable.values():
+                strings += extract(value)
+        elif type(iterable) is list:
+            for item in iterable:
+                strings += extract(item)
+        elif type(iterable) is str:
+            if iterable not in strings:
+                strings.append(iterable)
+        return strings
+    logging.debug('Done extracting nested strings')
+    return extract(iterable)
+
 def readYAML(path):
     logging.debug(f'Reading the YAML file "{path}".')
     try:
@@ -33,38 +50,20 @@ def readYAML(path):
         logging.exception(e)
         raise e
 
-def loadConfig(path = "RMMUDConfig.yaml"):
-    logging.debug(f'Loading config.')
-    
+def checkIfZipIsCorrupted(path):
     try:
-        config = readYAML(path)
+        with zipfile.ZipFile(path) as zip_file:
+            zip_file.testzip()
+            logging.debug(f'The ZIP file "{path}" is not corrupted.')
+            return False
+    except zipfile.BadZipFile as e:
+        logging.warning(f'The ZIP file "{path}" is corrupted or not a valid ZIP file.')
+        logging.exception(e)
+        return True
     except Exception as e:
-        logging.error(f'Could not load config.')
+        logging.error(f'An error occurred while checking if "{path}" is corrupted.')
         logging.exception(e)
         raise e
-    
-    logging.debug(f'Verifying config variable types.')
-    config['CurseForge API Key'] = config.get('CurseForge API Key', None)
-    if isinstance(config['CurseForge API Key'], str) and len(config['CurseForge API Key']) != 60:
-        config['CurseForge API Key'] = None
-    if config['CurseForge API Key'] is not None and not isinstance(config['CurseForge API Key'], str):
-        raise TypeError("Curseforge API key should be a string or None.")
-    
-    config['Check for RMMUD Updates'] = config.get('Check for RMMUD Updates', True)
-    if not isinstance(config['Check for RMMUD Updates'], bool):
-        raise TypeError("Check for updates should be a boolean value.")
-    
-    config['Downloads Folder'] = config.get('Downloads Folder', 'RMMUDDownloads')
-    if not isinstance(config['Downloads Folder'], str):
-        raise TypeError("Downloads folder should be a string.")
-    
-    config['Instances Folder'] = config.get('Instances Folder', 'RMMUDInstances')
-    if not isinstance(config['Instances Folder'], str):
-        raise TypeError("Instances folder should be a string.")
-    logging.debug(f'Done verifying config variable types.')
-    
-    logging.debug(f'Done loading config.')
-    return config
 
 def checkForUpdate():
     logging.debug('Checking for an RMMUD update.')
@@ -99,22 +98,38 @@ def checkForUpdate():
     logging.debug(f'You are on the latest version already.')
     return
 
-def extractNestedStrings(iterable):
-    logging.debug('Extracting nested strings')
-    def extract(iterable):
-        strings = []
-        if type(iterable) is dict:
-            for value in iterable.values():
-                strings += extract(value)
-        elif type(iterable) is list:
-            for item in iterable:
-                strings += extract(item)
-        elif type(iterable) is str:
-            if iterable not in strings:
-                strings.append(iterable)
-        return strings
-    logging.debug('Done extracting nested strings')
-    return extract(iterable)
+def loadConfig(path = "RMMUDConfig.yaml"):
+    logging.debug(f'Loading config.')
+    
+    try:
+        config = readYAML(path)
+    except Exception as e:
+        logging.error(f'Could not load config.')
+        logging.exception(e)
+        raise e
+    
+    logging.debug(f'Verifying config variable types.')
+    config['CurseForge API Key'] = config.get('CurseForge API Key', None)
+    if isinstance(config['CurseForge API Key'], str) and len(config['CurseForge API Key']) != 60:
+        config['CurseForge API Key'] = None
+    if config['CurseForge API Key'] is not None and not isinstance(config['CurseForge API Key'], str):
+        raise TypeError("Curseforge API key should be a string or None.")
+    
+    config['Check for RMMUD Updates'] = config.get('Check for RMMUD Updates', True)
+    if not isinstance(config['Check for RMMUD Updates'], bool):
+        raise TypeError("Check for updates should be a boolean value.")
+    
+    config['Downloads Folder'] = config.get('Downloads Folder', 'RMMUDDownloads')
+    if not isinstance(config['Downloads Folder'], str):
+        raise TypeError("Downloads folder should be a string.")
+    
+    config['Instances Folder'] = config.get('Instances Folder', 'RMMUDInstances')
+    if not isinstance(config['Instances Folder'], str):
+        raise TypeError("Instances folder should be a string.")
+    logging.debug(f'Done verifying config variable types.')
+    
+    logging.debug(f'Done loading config.')
+    return config
 
 def readInstanceFile(path):
     logging.debug(f'Reading instance file "{path}".')
@@ -227,21 +242,6 @@ def parseInstances(instances):
                 parsed_instances[mod_loader]['mods'][minecraft_version][mod_id][url_authority][mod_version]['directories'].append(instance_dir)
     
     return parsed_instances
-
-def checkIfZipIsCorrupted(path):
-    try:
-        with zipfile.ZipFile(path) as zip_file:
-            zip_file.testzip()
-            logging.debug(f'The ZIP file "{path}" is not corrupted.')
-            return False
-    except zipfile.BadZipFile as e:
-        logging.warning(f'The ZIP file "{path}" is corrupted or not a valid ZIP file.')
-        logging.exception(e)
-        return True
-    except Exception as e:
-        logging.error(f'An error occurred while checking if "{path}" is corrupted.')
-        logging.exception(e)
-        raise e
 
 # REVIEW
 def downloadModrinthMod(mod_id, mod_loader, minecraft_version, mod_version, download_dir, instance_dirs):
