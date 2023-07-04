@@ -180,11 +180,13 @@ def loadInstances(instances_dir: str):
 def parseInstances(instances):
     logging.debug('Parsing enabled instances')
     parsed_instances = {}
+    
     for instance_name, instance in instances.items():
         mod_loader = str(instance['Loader']).lower()
         minecraft_version = str(instance['Version'])
         instance_dir = str(instance['Directory'])
         mods = extractNestedStrings(instance['Mods'])
+        
         for mod_url in mods:
             url_authority = urlparse(mod_url).netloc
             mod_version = 'latest_version'
@@ -194,23 +196,25 @@ def parseInstances(instances):
             if url_authority == 'modrinth.com':
                 url_path = urlparse(mod_url).path
                 url_path_split = url_path.split('/')[1:]
+                
                 if url_path_split[0] not in ('mod', 'plugin', 'datapack'):
-                    continue # If it's not a mod or datapack it's not supported.
+                    continue
+                
                 mod_id = url_path_split[1]
-                if len(url_path_split) == 4:
-                    if url_path_split[2] == 'version':
-                        mod_version = url_path_split[3]
+                
+                if len(url_path_split) == 4 and url_path_split[2] == 'version':
+                    mod_version = url_path_split[3]
             
             elif url_authority == 'curseforge.com':
                 url_path = urlparse(mod_url).path
                 url_path_split = url_path.split('/')[1:]
-                if url_path_split[0] != 'minecraft':
-                    logging.warning(f'Url "{mod_url}" is not for minecraft!')
-                    continue
-                if url_path_split[1] not in ('mc-mods'):
+                
+                if url_path_split[0] != 'minecraft' or url_path_split[1] != 'mc-mods':
                     logging.warning(f'Url "{mod_url}" is not for a minecraft mod!')
                     continue
+                
                 mod_id = url_path_split[2]
+                
                 if len(url_path_split) == 5 and url_path_split[3] == 'files':
                     mod_version = url_path_split[4]
             
@@ -219,6 +223,7 @@ def parseInstances(instances):
                 continue
             
             parsed_instances.setdefault(mod_loader, {}).setdefault('mods', {}).setdefault(minecraft_version, {}).setdefault(mod_id, {}).setdefault(url_authority, {}).setdefault(mod_version, {}).setdefault('directories', [])
+            
             if instance_dir not in parsed_instances[mod_loader]['mods'][minecraft_version][mod_id][url_authority][mod_version]['directories']:
                 parsed_instances[mod_loader]['mods'][minecraft_version][mod_id][url_authority][mod_version]['directories'].append(instance_dir)
     
