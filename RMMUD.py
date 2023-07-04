@@ -197,8 +197,12 @@ def loadInstanceFile(path):
 def loadInstances(instances_dir: str):
     logging.info(f'LOADING INSTANCES')
     
-    if not os.path.exists(instances_dir):
-        os.makedirs(instances_dir)
+    try:
+        os.makedirs(instances_dir, exist_ok=True)
+    except Exception as e:
+        logging.error(f'Could not create "{instances_dir}".')
+        logging.exception(e)
+        raise e
     
     enabled_instances = {}
     for instance_file in [f for f in os.listdir(instances_dir) if f.endswith('.yaml')]:
