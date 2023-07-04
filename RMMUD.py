@@ -176,7 +176,6 @@ def loadInstances(instances_dir: str):
             pass
     return enabled_instances
 
-# REVIEW
 def parseInstances(instances):
     logging.debug('Parsing enabled instances')
     parsed_instances = {}
