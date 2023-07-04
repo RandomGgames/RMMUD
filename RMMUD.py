@@ -214,9 +214,10 @@ def loadInstances(instances_dir: str):
             if not instance['Enabled']:
                 logging.info(f'Ignoring disabled instance "{instance_file}"')
                 continue
-            logging.info(f'Loading enabled instance "{instance_file}"')
-            instance.pop('Enabled')
-            enabled_instances[instance_name] = instance
+            else:
+                logging.info(f'Loading enabled instance "{instance_file}"')
+                instance.pop('Enabled')
+                enabled_instances[instance_name] = instance
         except Exception as e:
             logging.warning(f'Could not load instance "{instance_name}". Ignoring this file.')
             logging.exception(e)
