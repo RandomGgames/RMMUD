@@ -75,7 +75,6 @@ def getLatestReleaseVersion(tags_url = "https://api.github.com/repos/RandomGgame
         logging.warning(f'Could not get latest github release version.')
         logging.exception(e)
         raise e
-    
 
 def checkForUpdate():
     logging.info('Checking for an RMMUD update.')
