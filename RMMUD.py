@@ -119,7 +119,7 @@ def copyToFolders(file_path, destination_path):
         raise e
 
 def loadConfigFile(path = "RMMUDConfig.yaml"):
-    logging.debug(f'Loading config.')
+    logging.info(f'Loading config.')
     
     try:
         config = readYAML(path)
