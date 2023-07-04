@@ -33,7 +33,6 @@ def readYAML(path):
         logging.exception(e)
         raise e
 
-# REVIEW
 def loadConfig(path = "RMMUDConfig.yaml"):
     logging.debug(f'Loading config.')
     
