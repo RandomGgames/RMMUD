@@ -51,6 +51,7 @@ def readYAML(path):
         raise e
 
 def checkIfZipIsCorrupted(path):
+    logging.debug(f'Checking if "{path}" is corrupted.')
     try:
         with zipfile.ZipFile(path) as zip_file:
             zip_file.testzip()
