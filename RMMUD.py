@@ -98,6 +98,17 @@ def checkForUpdate():
     logging.info(f'You are on the latest version already.')
     return
 
+def copyToFolders(file_path, destination_path):
+    logging.debug(f'Copying "{file_path}" into "{destination_path}".')
+    try:
+        shutil.copy2(file_path, destination_path)
+        logging.debug(f'Successfully coppied.')
+        return
+    except Exception as e:
+        logging.warning(f'Could not copy "{file_path}" into "{destination_path}".')
+        logging.exception(e)
+        raise e
+
 def loadConfig(path = "RMMUDConfig.yaml"):
     logging.debug(f'Loading config.')
     
