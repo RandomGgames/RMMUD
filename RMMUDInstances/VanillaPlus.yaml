@@ -125,7 +125,7 @@ Mods:
     - https://modrinth.com/mod/cherished-worlds
     - https://modrinth.com/mod/dcwa
     - https://modrinth.com/mod/draggable-lists
-    - #https://modrinth.com/mod/draggable-resource-packs
+    #- https://modrinth.com/mod/draggable-resource-packs
     - https://modrinth.com/mod/isometric-renders
     - https://modrinth.com/mod/modmenu
     - https://modrinth.com/mod/vtdownloader
@@ -165,3 +165,16 @@ Mods:
     - https://modrinth.com/plugin/lmd #Let Me Despawn
   Privacy:
     - https://modrinth.com/mod/no-telemetry
+Resource Packs:
+  - https://www.curseforge.com/minecraft/texture-packs/fresh-animations
+  - https://www.curseforge.com/minecraft/texture-packs/ovos-rustic-redemption
+  - https://www.curseforge.com/minecraft/texture-packs/simple-grass-flowers
+  - https://www.curseforge.com/minecraft/texture-packs/xalis-enhanced-vanilla
+  - https://www.planetminecraft.com/texture-pack/gold-veins-netherite-equipment/
+  - https://www.planetminecraft.com/texture-pack/medieval-glass/
+  - https://www.planetminecraft.com/texture-pack/overlay-textures-1-19-1/
+Shader Packs:
+  - https://modrinth.com/shader/rethinking-voxels/version/r01-alpha4
+  - https://www.curseforge.com/minecraft/customization/complementary-reimagined
+  - https://www.curseforge.com/minecraft/customization/complementary-shaders
+  - https://www.curseforge.com/minecraft/customization/sildurs-vibrant-shaders
