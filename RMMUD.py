@@ -76,6 +76,22 @@ def getLatestReleaseVersion(tags_url = "https://api.github.com/repos/RandomGgame
         logging.exception(e)
         raise e
 
+def compareVersions(compare_version: str, current_version: str = __version__):
+    logging.debug(f'Comparing two versions together')
+    current_parts = current_version.split('.')
+    compare_parts = compare_version.split('.')
+    for i in range(max(len(current_parts), len(compare_parts))):
+        current_part = int(current_parts[i]) if i < len(current_parts) else 0
+        compare_part = int(compare_parts[i]) if i < len(compare_parts) else 0
+        if int(compare_part) > int(current_part):
+            logging.debug(f'The compare_version is higher than the current_version')
+            return 'higher'
+        elif int(compare_part) < int(current_part):
+            logging.debug(f'The compare_version is lower than the current_version')
+            return 'lower'
+    logging.debug(f'The compare_version is the same as the current_version')
+    return 'same'
+
 def checkForUpdate():
     logging.info('Checking for an RMMUD update.')
     
