@@ -165,35 +165,34 @@ def loadConfigFile(path = "RMMUDConfig.yaml"):
 
 def loadInstanceFile(path):
     logging.debug(f'Reading instance file "{path}".')
+    
     try:
         data = readYAML(path)
-        
-        data['Enabled'] = data.get('Enabled', True)
-        if not isinstance(data['Enabled'], bool):
-            raise TypeError(f'The Enabled option in the instance file "{path}" should be a boolean.')
-        
-        data['Loader'] = data.get(data['Loader'], "")
-        if not isinstance(data['Loader'], str):
-            raise TypeError(f'The Loader option in the instance file "{path}" should be a string.')
-        
-        data['Directory'] = data.get(data['Directory'], "")
-        if not isinstance(data['Directory'], (str, type(None))):
-            raise TypeError(f'The Directory option in the instance file "{path}" should be a string or None.')
-        
-        data['Mods'] = data['Mods'] if data['Mods'] else None
-        if not isinstance(data['Mods'], (str, list, dict, type(None))):
-            raise TypeError(f'The Mods option in the instance file "{path}" should be either a string, list, dictionary, or None.')
-        
-        data['Version'] = data.get(data['Version'], "")
-        if not isinstance(data['Version'], str):
-            raise TypeError(f'The Version option in the instance file "{path}" should be a string.')
-        
-        logging.debug(f'Done reading instance file')
-        return data
     except Exception as e:
-        logging.error(f'Could not read instance file "{path}".')
+        logging.error(f'Could not load config.')
         logging.exception(e)
         raise e
+    
+    logging.debug(f'Verifying instance variable types.')
+    data['Enabled'] = data.get('Enabled', True)
+    if not isinstance(data['Enabled'], bool):
+        raise TypeError(f'The Enabled option in the instance file "{path}" should be a boolean.')
+    data['Loader'] = data.get(data['Loader'], "")
+    if not isinstance(data['Loader'], str):
+        raise TypeError(f'The Loader option in the instance file "{path}" should be a string.')
+    data['Directory'] = data.get(data['Directory'], "")
+    if not isinstance(data['Directory'], (str, type(None))):
+        raise TypeError(f'The Directory option in the instance file "{path}" should be a string or None.')
+    data['Mods'] = data['Mods'] if data['Mods'] else None
+    if not isinstance(data['Mods'], (str, list, dict, type(None))):
+        raise TypeError(f'The Mods option in the instance file "{path}" should be either a string, list, dictionary, or None.')
+    data['Version'] = data.get(data['Version'], "")
+    if not isinstance(data['Version'], str):
+        raise TypeError(f'The Version option in the instance file "{path}" should be a string.')
+    logging.debug(f'Done verifying instance variable types.')
+    
+    logging.debug(f'Done reading instance file')
+    return data
 
 def loadInstances(instances_dir: str):
     logging.info(f'LOADING INSTANCES')
