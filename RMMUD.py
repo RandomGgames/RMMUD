@@ -82,8 +82,7 @@ def checkForUpdate():
     
     logging.debug('Getting latest github version.')
     try:
-        url = "https://api.github.com/repos/RandomGgames/RMMUD/tags"
-        github_version = requests.get(url).json()[0]["name"]
+        github_version = getLatestReleaseVersion()
     except Exception as e:
         logging.warning(f'Could not check for update.')
         logging.exception(e)
