@@ -9,10 +9,10 @@ from datetime import datetime
 from urllib.parse import urlparse
 import importlib.util
 if importlib.util.find_spec("requests") is None:
-    os.system("pip install requests")
+    os.system("python -m pip install requests")
 import requests
 if importlib.util.find_spec("yaml") is None:
-    os.system("pip install pyyaml")
+    os.system("python -m pip install pyyaml")
 import yaml
 
 __version_info__ = (3, 7, 0)
