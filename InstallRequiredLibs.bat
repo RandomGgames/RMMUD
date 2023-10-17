@@ -1,2 +1,1 @@
-pip install requests
-pip install pyyaml
+pip install -r requirements.txt
