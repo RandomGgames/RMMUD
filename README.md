@@ -3,7 +3,7 @@ RMMUD is short for "RandomGgames' Minecraft Mod Updater and Downloader". This is
 
 # Requirements
 - Python 3. https://www.python.org/downloads/
-- Libraries. `pip install -r requirements.txt`
+- Libraries. `pip install -r requirements.txt` (Can be installed via the provided InstallRequiredLibs.bat file)
 - Your own CurseForge API key if using Curseforge links. https://console.curseforge.com/?#/api-keys
   - Log in
   - Close the popup menu in the middle of the screen if it pops up
