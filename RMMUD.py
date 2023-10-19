@@ -1,14 +1,18 @@
 import json
 import logging
 import os
-import requests
 import shutil
+import subprocess
 import sys
 import webbrowser
-import yaml
 import zipfile
 from datetime import datetime
+from importlib.util import find_spec
 from urllib.parse import urlparse
+from venv import EnvBuilder
+
+from types import SimpleNamespace
+from typing import Literal, Type, TypedDict, overload
 
 __version_info__ = (3, 7, 0)
 __version__ = '.'.join(str(x) for x in __version_info__)
@@ -16,28 +20,126 @@ __version__ = '.'.join(str(x) for x in __version_info__)
 # sydney = <3 for gian 4 evr
 # ^^^ My girlfriend wrote this for me, I am not removing it.
 
-def extractNestedStrings(iterable):
+depends = ("requests", "pyyaml")
+
+if all(find_spec(x) is None for x in depends):
+    def call_python(context: SimpleNamespace, *py_args: str) -> None:
+        """Executes the newly created Python using safe-ish options"""
+        args: list[str] = [context.env_exec_cmd, *py_args]
+        env = os.environ.copy()
+        env['VIRTUAL_ENV'] = context.env_dir
+        env.pop('PYTHONHOME', None)
+        env.pop('PYTHONPATH', None)
+        subprocess.check_output(
+            args, env=env, cwd=context.env_dir, executable=context.env_exec_cmd)
+
+    # Make the virtual environment
+    env_dir = os.path.abspath('.venv')
+    virtualenv = EnvBuilder(with_pip=True)
+    virtualenv.create(env_dir)
+    context = virtualenv.ensure_directories(env_dir)
+
+    # Install the dependencies
+    call_python(context, '-m', 'pip', 'install', *depends)
+
+    # Run this file in the virtual environment
+    exit(subprocess.call([context.env_exec_cmd, __file__]))
+
+import requests  # noqa
+import yaml  # noqa
+
+Mods = dict[str, list[str] | dict[str, list[str]]] | list[str] | str
+Config = TypedDict("Config", {
+    "CurseForge API Key": str | None,
+    "Check for RMMUD Updates": bool,
+    "Downloads Folder": str,
+    "Instances Folder": str,
+})
+Instance = TypedDict("Instance", {
+    "Enabled": bool,
+    "Loader": str,
+    "Directory": str | None,
+    "Mods": Mods,
+    "Version": str
+})
+Instances = dict[str, Instance]
+ParsedInstances = dict[str, dict[str, dict[str, dict[
+    str, dict[str, dict[str, dict[str, list[str]]]]]]]]
+CFHashes = TypedDict("CFHashes", {
+    "value": str,
+    "algo": int
+})
+CFGameVersion = TypedDict("CFGameVersion", {
+    "gameVersionName": str,
+    "gameVersionPadded": int,
+    "gameVersion": str,
+    "gameVersionReleaseDate": str,
+    "gameVersionTypeId": int
+})
+CFDependencies = TypedDict("CFDependencies", {
+    "modId": int,
+    "relationType": int
+})
+CFModules = TypedDict("CFModules", {
+    "name": str,
+    "fingerprint": int
+})
+CFVersionFile = TypedDict("CFVersionFile", {
+    "id": int,
+    "gameId": int,
+    "modId": int,
+    "isAvailable": bool,
+    "displayName": str,
+    "fileName": str,
+    "releaseType": int,
+    "fileStatus": int,
+    "hashes": list[CFHashes],
+    "fileDate": str,
+    "fileLength": int,
+    "downloadCount": int,
+    "downloadUrl": str | None,
+    "gameVersions": list[str],
+    "sortableGameVersions": list[CFGameVersion],
+    "dependencies": list[CFDependencies],
+    "alternateFileId": int,
+    "isServerPack": bool,
+    "fileFingerprint": int,
+    "modules": list[CFModules]
+})
+
+def extractNestedStrings(iterable: Mods) -> list[str]:
     logging.debug('Extracting nested strings')
-    def extract(iterable):
-        strings = []
-        if type(iterable) is dict:
-            for value in iterable.values():
-                strings += extract(value)
-        elif type(iterable) is list:
-            for item in iterable:
-                strings += extract(item)
-        elif type(iterable) is str:
-            if iterable not in strings:
-                strings.append(iterable)
+    def extract(iterable: Mods) -> list[str]:
+        strings: list[str] = []
+        match iterable:
+            case dict():
+                for value in iterable.values():
+                    if isinstance(value, list):
+                        strings += extract(value)
+                        continue
+                    for subvalue in value:
+                        strings += extract(subvalue)
+            case list():
+                for item in iterable:
+                    strings += extract(item)
+            case str():
+                if iterable not in strings:
+                    strings.append(iterable)
         return strings
     logging.debug('Done extracting nested strings')
     return extract(iterable)
 
-def readYAML(path):
+@overload
+def readYAML(path: str, yamltype: Type[Config]) -> Config: ...
+
+@overload
+def readYAML(path: str, yamltype: Type[Instance]) -> Instance: ...
+
+def readYAML(path: str, yamltype: Type[Config] | Type[Instance]) -> Config | Instance:
     logging.debug(f'Reading the YAML file "{path}".')
     try:
         with open(path, 'r') as f:
-            data = yaml.load(f, yaml.SafeLoader)
+            data: yamltype = yaml.load(f, yaml.SafeLoader)
             logging.debug(f'Done reading the YAML file.')
             return data
     except Exception as e:
@@ -45,7 +147,7 @@ def readYAML(path):
         logging.exception(e)
         raise e
 
-def checkIfZipIsCorrupted(path):
+def checkIfZipIsCorrupted(path: str) -> bool:
     logging.debug(f'Checking if "{path}" is corrupted.')
     try:
         with zipfile.ZipFile(path) as zip_file:
@@ -61,10 +163,10 @@ def checkIfZipIsCorrupted(path):
         logging.exception(e)
         raise e
 
-def getGithubLatestReleaseTag(tags_url = "https://api.github.com/repos/RandomGgames/RMMUD/tags"):
+def getGithubLatestReleaseTag(tags_url: str = "https://api.github.com/repos/RandomGgames/RMMUD/tags") -> str:
     logging.debug('Getting latest github release version.')
     try:
-        release_version = requests.get(tags_url).json()[0]["name"]
+        release_version: str = requests.get(tags_url).json()[0]["name"]
         logging.debug(f'Done getting latest github release version ({release_version}).')
         return release_version
     except Exception as e:
@@ -72,7 +174,7 @@ def getGithubLatestReleaseTag(tags_url = "https://api.github.com/repos/RandomGga
         logging.exception(e)
         raise e
 
-def compareTwoVersions(compare_version: str, current_version: str = __version__):
+def compareTwoVersions(compare_version: str, current_version: str = __version__) -> Literal['higher', 'lower', 'same']:
     logging.debug(f'Comparing two versions together')
     current_parts = current_version.split('.')
     compare_parts = compare_version.split('.')
@@ -88,7 +190,7 @@ def compareTwoVersions(compare_version: str, current_version: str = __version__)
     logging.debug(f'The compare_version is the same as the current_version')
     return 'same'
 
-def checkForUpdate():
+def checkForUpdate() -> bool | None:
     logging.info('Checking for an RMMUD update.')
     
     current_version = __version__
@@ -104,21 +206,22 @@ def checkForUpdate():
     
     logging.debug('Comparing github and current versions.')
     version_check = compareTwoVersions(github_version, __version__)
-    if version_check == "higher":
-        logging.info(f'There is an update available! ({current_version} (current) → {github_version} (latest)).\nDo you want to open the GitHub releases page to download it right now? (yes/no): ')
-        open_update = input('Open releases page? ').lower()
-        if open_update in ("yes", "y"):
-            url = "https://github.com/RandomGgames/RMMUD/releases"
-            webbrowser.open(url)
-            exit()
-    elif version_check == "lower":
-        logging.info(f'You are on what seems like a work in progress version, as it is higher than the latest release. Please report any bugs onto the github page at https://github.com/RandomGgames/RMMUD')
-        return False
-    elif version_check == "same":
-        logging.info(f'You are on the latest version already.')
-        return None
+    match version_check:
+        case "higher":
+            logging.info(f'There is an update available! ({current_version} (current) → {github_version} (latest)).\nDo you want to open the GitHub releases page to download it right now? (yes/no): ')
+            open_update = input('Open releases page? ').lower()
+            if open_update in ("yes", "y"):
+                url = "https://github.com/RandomGgames/RMMUD/releases"
+                webbrowser.open(url)
+                exit()
+        case "lower":
+            logging.info(f'You are on what seems like a work in progress version, as it is higher than the latest release. Please report any bugs onto the github page at https://github.com/RandomGgames/RMMUD')
+            return False
+        case "same":
+            logging.info(f'You are on the latest version already.')
+            return None
 
-def copyToFolders(file_path, destination_path):
+def copyToFolders(file_path: str, destination_path: str) -> None:
     logging.debug(f'Copying "{file_path}" into "{destination_path}".')
     try:
         shutil.copy2(file_path, destination_path)
@@ -129,71 +232,83 @@ def copyToFolders(file_path, destination_path):
         logging.exception(e)
         raise e
 
-def loadConfigFile(path = "RMMUDConfig.yaml"):
+def loadConfigFile(path: str = "RMMUDConfig.yaml") -> Config:
     logging.info(f'Loading config.')
     
     try:
-        config = readYAML(path)
+        config = readYAML(path, Config)
     except Exception as e:
         logging.error(f'Could not load config.')
         logging.exception(e)
         raise e
-    
+
     logging.debug(f'Verifying config variable types.')
+
     config['CurseForge API Key'] = config.get('CurseForge API Key', None)
+
     if isinstance(config['CurseForge API Key'], str) and len(config['CurseForge API Key']) != 60:
         config['CurseForge API Key'] = None
-    if config['CurseForge API Key'] is not None and not isinstance(config['CurseForge API Key'], str):
+    if config['CurseForge API Key'] is not None and not type(config['CurseForge API Key']) == str:
         raise TypeError("Curseforge API key should be a string or None.")
-    config['Check for RMMUD Updates'] = config.get('Check for RMMUD Updates', True)
-    if not isinstance(config['Check for RMMUD Updates'], bool):
-        raise TypeError("Check for updates should be a boolean value.")
-    config['Downloads Folder'] = config.get('Downloads Folder', 'RMMUDDownloads')
-    if not isinstance(config['Downloads Folder'], str):
-        raise TypeError("Downloads folder should be a string.")
-    config['Instances Folder'] = config.get('Instances Folder', 'RMMUDInstances')
-    if not isinstance(config['Instances Folder'], str):
-        raise TypeError("Instances folder should be a string.")
+
+    defaults = {
+        "Check for RMMUD Updates": True,
+        "Downloads Folder": "RMMUDDownloads",
+        "Instances Folder": "RMMUDInstances"
+    }
+
+    for key, value in defaults.items():
+        config[key] = config.get(key, value)
+        if not isinstance(config[key], type(value)):
+            raise TypeError(f"{key} should be a {type(value).__name__}.")
+
     logging.debug(f'Done verifying config variable types.')
-    
+
     logging.debug(f'Done loading config.')
     return config
 
-def loadInstanceFile(path):
+def loadInstanceFile(path: str) -> Instance:
     logging.debug(f'Reading instance file "{path}".')
     
     try:
-        data = readYAML(path)
+        data = readYAML(path, Instance)
     except Exception as e:
         logging.error(f'Could not load config.')
         logging.exception(e)
         raise e
-    
+
     logging.debug(f'Verifying instance variable types.')
-    data['Enabled'] = data.get('Enabled', True)
-    if not isinstance(data['Enabled'], bool):
-        raise TypeError(f'The Enabled option in the instance file "{path}" should be a boolean.')
-    data['Loader'] = data.get('Loader', "").lower()
-    if not isinstance(data['Loader'], str):
-        raise TypeError(f'The Loader option in the instance file "{path}" should be a string.')
-    data['Directory'] = data.get('Directory', "")
-    if not isinstance(data['Directory'], (str, type(None))):
-        raise TypeError(f'The Directory option in the instance file "{path}" should be a string or None.')
-    data['Mods'] = data['Mods'] if data['Mods'] else None
-    if not isinstance(data['Mods'], (str, list, dict, type(None))):
-        raise TypeError(f'The Mods option in the instance file "{path}" should be either a string, list, dictionary, or None.')
-    data['Version'] = data.get('Version', "")
-    if not isinstance(data['Version'], str):
-        raise TypeError(f'The Version option in the instance file "{path}" should be a string.')
+
+    defaults = {
+        "Enabled": True,
+        "Loader": "",
+        "Directory": ["", None],
+        "Mods": [None, "", [...], {...: ...}],
+        "Version": ""
+    }
+
+    for key, value in defaults.items():
+        if not isinstance(value, list):
+            data[key] = data.get(key, value)
+            if not isinstance(data[key], type(value)):
+                raise TypeError(f"The {key} option in the instance file {path} should be a {type(value).__name__}.")
+        else:
+            data[key] = data.get(key, value[1])
+            if not any(isinstance(data[key], type(val)) for val in value):
+                raise TypeError(f"The {key} option in the instance file {path} " +
+                                f"should be a {' / '.join(str(type(val).__name__) for val in value)}")
+
     logging.debug(f'Done verifying instance variable types.')
-    
+
+    data["Loader"] = data["Loader"].lower()
+
     logging.debug(f'Done reading instance file')
     return data
 
-def loadInstances(instances_dir: str):
+def loadInstances(instances_dir: str) -> Instances:
     logging.info(f'LOADING INSTANCES')
     
-    if not os.path.exists('instances_dir'):
+    if not os.path.exists(instances_dir):
         try:
             os.makedirs(instances_dir)
             logging.debug(f'Created folder "{instances_dir}"')
@@ -202,7 +317,7 @@ def loadInstances(instances_dir: str):
             logging.exception(e)
             raise e
     
-    enabled_instances = {}
+    enabled_instances: Instances = {}
     for instance_file in [f for f in os.listdir(instances_dir) if f.endswith('.yaml')]:
         instance_path = os.path.join(instances_dir, instance_file)
         instance_name = os.path.splitext(instance_file)[0]
@@ -213,7 +328,7 @@ def loadInstances(instances_dir: str):
                 continue
             else:
                 logging.info(f'Loading enabled instance "{instance_file}"')
-                instance.pop('Enabled')
+                instance["Enabled"] = False
                 enabled_instances[instance_name] = instance
         except Exception as e:
             logging.warning(f'Could not load instance "{instance_name}". Ignoring this file.')
@@ -221,11 +336,11 @@ def loadInstances(instances_dir: str):
             continue
     return enabled_instances
 
-def parseInstances(instances):
+def parseInstances(instances: Instances) -> ParsedInstances:
     logging.debug('Parsing enabled instances')
-    parsed_instances = {}
+    parsed_instances: ParsedInstances = {}
     
-    for instance_name, instance in instances.items():
+    for _, instance in instances.items():
         mod_loader = str(instance['Loader']).lower()
         minecraft_version = str(instance['Version'])
         instance_dir = str(instance['Directory'])
@@ -266,15 +381,18 @@ def parseInstances(instances):
                 logging.warning(f'Mod manager cannot handle URLs from "{url_authority}". {mod_url}')
                 continue
             
-            parsed_instances.setdefault(mod_loader, {}).setdefault('mods', {}).setdefault(minecraft_version, {}).setdefault(mod_id, {}).setdefault(url_authority, {}).setdefault(mod_version, {}).setdefault('directories', [])
+            parsed_instances.setdefault(mod_loader, {}).setdefault('mods', {}).setdefault(
+                minecraft_version, {}).setdefault(mod_id, {}).setdefault(
+                url_authority, {}).setdefault(mod_version, {}).setdefault('directories', [])
             
             if instance_dir not in parsed_instances[mod_loader]['mods'][minecraft_version][mod_id][url_authority][mod_version]['directories']:
                 parsed_instances[mod_loader]['mods'][minecraft_version][mod_id][url_authority][mod_version]['directories'].append(instance_dir)
-    
+
     return parsed_instances
 
 # REVIEW
-def downloadModrinthMod(mod_id, mod_loader, minecraft_version, mod_version, download_dir, instance_dirs):
+def downloadModrinthMod(mod_id: str, mod_loader: str, minecraft_version: str, mod_version: str,
+                        download_dir: str, instance_dirs: list[str]) -> None:
     logging.info(f'Updating {mod_id} for {mod_loader} {minecraft_version}')
     
     logging.debug(f'Getting files from Modrinth')
@@ -304,7 +422,7 @@ def downloadModrinthMod(mod_id, mod_loader, minecraft_version, mod_version, down
             logging.warning(f'Could not find "{mod_id} {mod_version}" for {mod_loader} {minecraft_version}')
             return
     desired_mod_version_files = desired_mod_version['files']
-    if any('primary' == True in file for file in desired_mod_version_files):
+    if any(file['primary'] == True in file for file in desired_mod_version_files):
         desired_mod_version_files = [file for file in desired_mod_version_files if file['primary'] == True]
     desired_mod_version_file = desired_mod_version_files[0]
     
@@ -314,7 +432,7 @@ def downloadModrinthMod(mod_id, mod_loader, minecraft_version, mod_version, down
     download_path = os.path.join(download_dir, mod_loader, minecraft_version)
     downloaded_file_path = os.path.join(download_path, file_name)
     
-    if not (os.path.exists(downloaded_file_path) or checkIfZipIsCorrupted(downloaded_file_path)):
+    if not os.path.exists(downloaded_file_path) or checkIfZipIsCorrupted(downloaded_file_path):
         try:
             response = requests.get(download_url, headers = modrinth_header)
         except Exception as e:
@@ -333,7 +451,7 @@ def downloadModrinthMod(mod_id, mod_loader, minecraft_version, mod_version, down
         instance_file_path = os.path.join(instance_dir, file_name)
         if os.path.exists(instance_dir):
             if os.path.exists(downloaded_file_path):
-                if not (os.path.isfile(instance_file_path) or checkIfZipIsCorrupted(instance_file_path)):
+                if not os.path.isfile(instance_file_path) or checkIfZipIsCorrupted(instance_file_path):
                     try:
                         shutil.copy(downloaded_file_path, instance_file_path)
                         logging.info(f'Copied "{downloaded_file_path}" into "{instance_dir}"')
@@ -346,7 +464,8 @@ def downloadModrinthMod(mod_id, mod_loader, minecraft_version, mod_version, down
             logging.warning(f'Could not copy "{downloaded_file_path}" into "{instance_dir}": Could not find "{instance_dir}"')
 
 # REVIEW
-def downloadCurseforgeMod(mod_id, mod_loader, minecraft_version, mod_version, download_dir, instance_dirs, curseforge_api_key):
+def downloadCurseforgeMod(mod_id: str, mod_loader: str, minecraft_version: str, mod_version: str,
+                          download_dir: str, instance_dirs: list[str], curseforge_api_key: str) -> None:
     logging.info(f'Updating {mod_id} for {mod_loader} {minecraft_version}')
     
     # Getting mod ID
@@ -364,12 +483,13 @@ def downloadCurseforgeMod(mod_id, mod_loader, minecraft_version, mod_version, do
     # Get latest or desired mod version
     logging.debug(f'Getting files from CurseForge')
     curseforge_mod_loader = { 'forge': 1, 'fabric': 4 }.get(mod_loader, None)
+    desired_mod_version_file: CFVersionFile
     if mod_version == 'latest_version':
         try:
             url = (f'https://api.curseforge.com/v1/mods/{curseforge_mod_id}/files')
             params = {'gameVersion': str(minecraft_version), 'modLoaderType': curseforge_mod_loader}
             response = requests.get(url, params = params, headers = curseforge_header).json()['data']
-            desired_mod_version_file = list(file for file in response if minecraft_version in file['gameVersions'])[0]
+            desired_mod_version_file = [file for file in response if minecraft_version in file['gameVersions']][0]
         except Exception as e:
             logging.warning(f'Could not find "{mod_id}" for {mod_loader} {minecraft_version}. https://www.curseforge.com/minecraft/mc-mods/{mod_id}')
             return
@@ -378,7 +498,8 @@ def downloadCurseforgeMod(mod_id, mod_loader, minecraft_version, mod_version, do
             desired_mod_version_file = requests.get(f'https://api.curseforge.com/v1/mods/{curseforge_mod_id}/files/{mod_version}', params = {'modLoaderType': curseforge_mod_loader}, headers = curseforge_header).json()['data']
         except Exception as e:
             logging.warning(f'Could not find "{mod_id} {mod_version}" for {mod_loader} {minecraft_version}')
-    
+            return
+
     logging.debug(f'Downloading desired version from CurseForge')
     file_name = desired_mod_version_file['fileName']
     download_url = desired_mod_version_file['downloadUrl']
@@ -388,7 +509,7 @@ def downloadCurseforgeMod(mod_id, mod_loader, minecraft_version, mod_version, do
     download_path = os.path.join(download_dir, mod_loader, minecraft_version)
     downloaded_file_path = os.path.join(download_path, file_name)
     
-    if not (os.path.exists(downloaded_file_path) or checkIfZipIsCorrupted(downloaded_file_path)):
+    if not os.path.exists(downloaded_file_path) or checkIfZipIsCorrupted(downloaded_file_path):
         try:
             response = requests.get(download_url, headers = curseforge_header)
             with open(downloaded_file_path, 'wb') as f: f.write(response.content)
@@ -402,7 +523,7 @@ def downloadCurseforgeMod(mod_id, mod_loader, minecraft_version, mod_version, do
         instance_dir = os.path.join(instance_dir, 'mods')
         instance_file_path = os.path.join(instance_dir, file_name)
         if os.path.exists(instance_dir) and os.path.exists(downloaded_file_path):
-            if not (os.path.isfile(instance_file_path) or checkIfZipIsCorrupted(instance_file_path)):
+            if not os.path.isfile(instance_file_path) or checkIfZipIsCorrupted(instance_file_path):
                 try:
                     shutil.copy(downloaded_file_path, instance_file_path)
                     logging.info(f'Copied "{downloaded_file_path}" to "{instance_dir}"')
@@ -411,15 +532,16 @@ def downloadCurseforgeMod(mod_id, mod_loader, minecraft_version, mod_version, do
                     continue
 
 # REVIEW
-def updateMods(instances, config: list):
+def updateMods(instances: ParsedInstances, config: Config) -> None:
     logging.debug(f'Creating folders to download mods into')
     for mod_loader in instances:
         for minecraft_version in instances[mod_loader]['mods']:
+            directory = ""
             try:
-                dir = os.path.join(config['Downloads Folder'], mod_loader, minecraft_version)
-                os.makedirs(dir, exist_ok = True)
+                directory = os.path.join(config['Downloads Folder'], mod_loader, minecraft_version)
+                os.makedirs(directory, exist_ok = True)
             except Exception as e:
-                logging.warning(f'Could not create download folder {dir}: {e}')
+                logging.warning(f'Could not create download folder {directory}: {e}')
                 raise e
     
     logging.info(f'UPDATING MODS')
@@ -432,16 +554,19 @@ def updateMods(instances, config: list):
                         if website == 'modrinth.com':
                             downloadModrinthMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs)
                         elif website == 'curseforge.com':
-                            downloadCurseforgeMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs)
+                            if config['CurseForge API Key'] == None:
+                                logging.warning("No CurseForge API key is given, skipping mod...")
+                                continue
+                            downloadCurseforgeMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs, config['CurseForge API Key'])
 
 # REVIEW
-def deleteDuplicateMods(instances):
+def deleteDuplicateMods(instances: Instances) -> None:
     logging.info(f'DELETING OUTDATED MODS')
     
-    def scanFolder(instance_dir):
+    def scanFolder(instance_dir: str) -> None:
         logging.debug(f'Scanning for old mods')
         instance_dir = os.path.join(instance_dir, 'mods')
-        ids = {}
+        ids: dict[str, dict[float, str]] = {}
         
         if os.path.exists(instance_dir):
             for mod_file in [f for f in os.listdir(instance_dir) if f.endswith('.jar')]:
@@ -449,9 +574,9 @@ def deleteDuplicateMods(instances):
                 date_created = os.path.getctime(mod_path)
                 with zipfile.ZipFile(mod_path) as zip_file:
                     with zip_file.open('fabric.mod.json') as f:
-                        id = json.load(f, strict=False)['id']
-                        ids.setdefault(id, {})
-                ids[id][date_created] = mod_path
+                        mod_id = json.load(f, strict=False)['id']
+                        ids.setdefault(mod_id, {})
+                ids[mod_id][date_created] = mod_path
             
             ids = {key: dates for key, dates in ids.items() if len(dates) > 1}
             
@@ -474,13 +599,13 @@ def deleteDuplicateMods(instances):
     for instance_name, instance in instances.items():
         logging.info(f'Deleting old mods from instance: {instance_name}')
         if instance['Loader'] == 'fabric':
-            instance_dir = instance['Directory']
+            instance_dir = instance['Directory'] if instance['Directory'] != None else ""
             scanFolder(instance_dir)
         else:
-            logging.warning(f'Cannot auto-delete old mods in {instance_dir}: Only fabric mods supported atm.')
+            logging.warning(f"Cannot auto-delete old mods in {instance['Directory']}: Only fabric mods supported atm.")
 
 # REVIEW
-def main():
+def main() -> None:
     logging.debug(f'Running main body of script')
     
     config = loadConfigFile()
@@ -492,7 +617,7 @@ def main():
     if len(parsed_instances) == 0:
         logging.info(f'No instances exist!')
     else:
-        updateMods(parsed_instances)
+        updateMods(parsed_instances, config)
         deleteDuplicateMods(instances)
     
     logging.info('Done.')
@@ -504,7 +629,7 @@ if __name__ == '__main__':
     
     # Set up logging
     logging.basicConfig(
-        level = logging.DEBUG,
+        level = logging.INFO,
         format = '%(asctime)s.%(msecs)03d %(levelname)s: %(message)s',
         datefmt = '%Y/%m/%d %H:%M:%S',
         encoding = 'utf-8',
@@ -521,5 +646,6 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as e:
+        logging.error(e)
         input(f'The script could no longer continue to function due to the error described above. Please fix the issue described or go to https://github.com/RandomGgames/RMMUD to request help/report a bug')
-        exit()
+        exit(1)
