@@ -107,9 +107,9 @@ CFVersionFile = TypedDict("CFVersionFile", {
     "modules": list[CFModules]
 })
 
-def extractNestedStrings(iterable: Mods) -> list[str]:
+def extractNestedStrings(iterable: str | list | dict | tuple) -> list[str]:
     logging.debug('Extracting nested strings')
-    def extract(iterable: Mods) -> list[str]:
+    def extract(iterable: str | list | dict | tuple) -> list[str]:
         strings: list[str] = []
         match iterable:
             case dict():
@@ -119,12 +119,14 @@ def extractNestedStrings(iterable: Mods) -> list[str]:
                         continue
                     for subvalue in value:
                         strings += extract(subvalue)
-            case list():
+            case (list, tuple):
                 for item in iterable:
                     strings += extract(item)
             case str():
                 if iterable not in strings:
                     strings.append(iterable)
+            case _:
+                logging.debug(f'Cannot handle {iterable} which is type {type(iterable).__name__}. It will be ignored.')
         return strings
     logging.debug('Done extracting nested strings')
     return extract(iterable)
