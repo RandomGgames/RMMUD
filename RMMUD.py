@@ -9,7 +9,7 @@ import yaml
 import zipfile
 from datetime import datetime
 from urllib.parse import urlparse
-from typing import Literal, Type, TypedDict, overload
+from typing import Literal, TypedDict
 
 __version_info__ = (3, 7, 0)
 __version__ = '.'.join(str(x) for x in __version_info__)
@@ -24,7 +24,6 @@ Config = TypedDict("Config", {
     "Downloads Folder": str,
     "Instances Folder": str,
 })
-
 Instance = TypedDict("Instance", {
     "Enabled": bool,
     "Loader": str,
@@ -32,7 +31,6 @@ Instance = TypedDict("Instance", {
     "Mods": dict[str, list[str] | dict[str, list[str]]] | list[str] | str,
     "Version": str
 })
-
 Instances = dict[str, Instance]
 ParsedInstances = dict[str, dict[str, dict[str, dict[str, dict[str, dict[str, dict[str, list[str]]]]]]]]
 
@@ -99,7 +97,7 @@ def getGithubLatestReleaseTag(tags_url: str = "https://api.github.com/repos/Rand
         logging.exception(e)
         raise e
 
-def compareTwoVersions(compare_version: str, current_version: str = __version__):
+def compareTwoVersions(compare_version: str, current_version: str = __version__) -> Literal['higher', 'lower', 'same']:
     logging.debug(f'Comparing two versions together')
     current_parts = current_version.split('.')
     compare_parts = compare_version.split('.')
