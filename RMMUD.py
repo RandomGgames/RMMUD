@@ -425,8 +425,7 @@ def downloadModrinthMod(mod_id: str, mod_loader: str, minecraft_version: str, mo
         else:
             logging.warning(f'Could not copy "{downloaded_file_path}" into "{instance_dir}": Could not find "{instance_dir}"')
 
-def downloadCurseforgeMod(mod_id: str, mod_loader: str, minecraft_version: str, mod_version: str,
-                          download_dir: str, instance_dirs: list[str], curseforge_api_key: str) -> None:
+def downloadCurseforgeMod(mod_id: str, mod_loader: str, minecraft_version: str, mod_version: str, download_dir: str, instance_dirs: list[str], curseforge_api_key: str) -> None:
     logging.info(f'Updating {mod_id} for {mod_loader} {minecraft_version}')
     
     # Getting mod ID
