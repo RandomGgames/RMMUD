@@ -109,7 +109,7 @@ def readYAML(path: str) -> Config | Instance:
     logging.debug(f'Reading the YAML file "{path}".')
     try:
         with open(path, 'r') as f:
-            data: yamltype = yaml.load(f, yaml.SafeLoader)
+            data = yaml.load(f, yaml.SafeLoader)
             logging.debug(f'Done reading the YAML file.')
             return data
     except Exception as e:
