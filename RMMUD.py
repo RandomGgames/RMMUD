@@ -232,7 +232,7 @@ def loadConfigFile(path: str = "RMMUDConfig.yaml") -> Config:
     logging.info(f'Loading config.')
     
     try:
-        config = readYAML(path, Config)
+        config = readYAML(path)
     except Exception as e:
         logging.error(f'Could not load config.')
         logging.exception(e)
@@ -267,7 +267,7 @@ def loadInstanceFile(path: str) -> Instance:
     logging.debug(f'Reading instance file "{path}".')
     
     try:
-        data = readYAML(path, Instance)
+        data = readYAML(path)
     except Exception as e:
         logging.error(f'Could not load config.')
         logging.exception(e)
