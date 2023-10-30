@@ -346,9 +346,7 @@ def parseInstances(instances: Instances) -> ParsedInstances:
                 logging.warning(f'Mod manager cannot handle URLs from "{url_authority}". {mod_url}')
                 continue
             
-            parsed_instances.setdefault(mod_loader, {}).setdefault('mods', {}).setdefault(
-                minecraft_version, {}).setdefault(mod_id, {}).setdefault(
-                url_authority, {}).setdefault(mod_version, {}).setdefault('directories', [])
+            parsed_instances.setdefault(mod_loader, {}).setdefault('mods', {}).setdefault(minecraft_version, {}).setdefault(mod_id, {}).setdefault(url_authority, {}).setdefault(mod_version, {}).setdefault('directories', [])
             
             if instance_dir not in parsed_instances[mod_loader]['mods'][minecraft_version][mod_id][url_authority][mod_version]['directories']:
                 parsed_instances[mod_loader]['mods'][minecraft_version][mod_id][url_authority][mod_version]['directories'].append(instance_dir)
