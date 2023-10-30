@@ -530,9 +530,9 @@ def deleteDuplicateMods(instances: Instances) -> None:
                 date_created = os.path.getctime(mod_path)
                 with zipfile.ZipFile(mod_path) as zip_file:
                     with zip_file.open('fabric.mod.json') as f:
-                        mod_id = json.load(f, strict=False)['id']
-                        ids.setdefault(mod_id, {})
-                ids[mod_id][date_created] = mod_path
+                        id = json.load(f, strict=False)['id']
+                        ids.setdefault(id, {})
+                ids[id][date_created] = mod_path
             
             ids = {key: dates for key, dates in ids.items() if len(dates) > 1}
             
