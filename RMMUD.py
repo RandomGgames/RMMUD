@@ -9,7 +9,6 @@ import yaml
 import zipfile
 from datetime import datetime
 from urllib.parse import urlparse
-from types import SimpleNamespace
 from typing import Literal, Type, TypedDict, overload
 
 __version_info__ = (3, 7, 0)
