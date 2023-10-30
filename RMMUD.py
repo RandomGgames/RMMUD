@@ -511,10 +511,7 @@ def updateMods(instances: ParsedInstances, config: Config) -> None:
                         if website == 'modrinth.com':
                             downloadModrinthMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs)
                         elif website == 'curseforge.com':
-                            if config['CurseForge API Key'] == None:
-                                logging.warning("No CurseForge API key is given, skipping mod...")
-                                continue
-                            downloadCurseforgeMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs, config['CurseForge API Key'])
+                            downloadCurseforgeMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs)
 
 def deleteDuplicateMods(instances: Instances) -> None:
     logging.info(f'DELETING OUTDATED MODS')
