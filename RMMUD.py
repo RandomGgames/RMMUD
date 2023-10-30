@@ -244,7 +244,7 @@ def loadConfigFile(path: str = "RMMUDConfig.yaml") -> Config:
 
     if isinstance(config['CurseForge API Key'], str) and len(config['CurseForge API Key']) != 60:
         config['CurseForge API Key'] = None
-    if config['CurseForge API Key'] is not None and not type(config['CurseForge API Key']) == str:
+    if config['CurseForge API Key'] is not None and not isinstance(config['CurseForge API Key'], str):
         raise TypeError("Curseforge API key should be a string or None.")
 
     defaults = {
