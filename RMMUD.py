@@ -386,7 +386,6 @@ def parseInstances(instances: Instances) -> ParsedInstances:
 
     return parsed_instances
 
-# REVIEW
 def downloadModrinthMod(mod_id: str, mod_loader: str, minecraft_version: str, mod_version: str,
                         download_dir: str, instance_dirs: list[str]) -> None:
     logging.info(f'Updating {mod_id} for {mod_loader} {minecraft_version}')
@@ -459,7 +458,6 @@ def downloadModrinthMod(mod_id: str, mod_loader: str, minecraft_version: str, mo
         else:
             logging.warning(f'Could not copy "{downloaded_file_path}" into "{instance_dir}": Could not find "{instance_dir}"')
 
-# REVIEW
 def downloadCurseforgeMod(mod_id: str, mod_loader: str, minecraft_version: str, mod_version: str,
                           download_dir: str, instance_dirs: list[str], curseforge_api_key: str) -> None:
     logging.info(f'Updating {mod_id} for {mod_loader} {minecraft_version}')
@@ -527,7 +525,6 @@ def downloadCurseforgeMod(mod_id: str, mod_loader: str, minecraft_version: str, 
                     logging.warning(f'Could not copy "{downloaded_file_path}" into "{instance_dir}": {e}')
                     continue
 
-# REVIEW
 def updateMods(instances: ParsedInstances, config: Config) -> None:
     logging.debug(f'Creating folders to download mods into')
     for mod_loader in instances:
@@ -555,7 +552,6 @@ def updateMods(instances: ParsedInstances, config: Config) -> None:
                                 continue
                             downloadCurseforgeMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs, config['CurseForge API Key'])
 
-# REVIEW
 def deleteDuplicateMods(instances: Instances) -> None:
     logging.info(f'DELETING OUTDATED MODS')
     
@@ -600,7 +596,6 @@ def deleteDuplicateMods(instances: Instances) -> None:
         else:
             logging.warning(f'Cannot auto-delete old mods in {instance_dir}: Only fabric mods supported atm.')
 
-# REVIEW
 def main():
     logging.debug(f'Running main body of script')
     
