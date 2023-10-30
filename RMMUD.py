@@ -131,13 +131,7 @@ def extractNestedStrings(iterable: str | list | dict | tuple) -> list[str]:
     logging.debug('Done extracting nested strings')
     return extract(iterable)
 
-@overload
-def readYAML(path: str, yamltype: Type[Config]) -> Config: ...
-
-@overload
-def readYAML(path: str, yamltype: Type[Instance]) -> Instance: ...
-
-def readYAML(path: str, yamltype: Type[Config] | Type[Instance]) -> Config | Instance:
+def readYAML(path):
     logging.debug(f'Reading the YAML file "{path}".')
     try:
         with open(path, 'r') as f:
