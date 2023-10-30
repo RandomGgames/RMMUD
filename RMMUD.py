@@ -466,8 +466,7 @@ def downloadCurseforgeMod(mod_id: str, mod_loader: str, minecraft_version: str, 
             desired_mod_version_file = requests.get(f'https://api.curseforge.com/v1/mods/{curseforge_mod_id}/files/{mod_version}', params = {'modLoaderType': curseforge_mod_loader}, headers = curseforge_header).json()['data']
         except Exception as e:
             logging.warning(f'Could not find "{mod_id} {mod_version}" for {mod_loader} {minecraft_version}')
-            return
-
+    
     logging.debug(f'Downloading desired version from CurseForge')
     file_name = desired_mod_version_file['fileName']
     download_url = desired_mod_version_file['downloadUrl']
