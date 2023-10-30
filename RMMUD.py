@@ -17,6 +17,7 @@ __version__ = '.'.join(str(x) for x in __version_info__)
 # sydney = <3 for gian 4 evr
 # ^^^ My girlfriend wrote this for me, I am not removing it.
 
+"""Type Hints"""
 Config = TypedDict("Config", {
     "CurseForge API Key": str | None,
     "Check for RMMUD Updates": bool,
