@@ -208,25 +208,25 @@ def loadConfigFile(path: str = "RMMUDConfig.yaml") -> Config:
         raise e
     
     logging.debug(f'Verifying config variable types.')
-
+    
     config['CurseForge API Key'] = config.get('CurseForge API Key', None)
-
+    
     if isinstance(config['CurseForge API Key'], str) and len(config['CurseForge API Key']) != 60:
         config['CurseForge API Key'] = None
     if config['CurseForge API Key'] is not None and not isinstance(config['CurseForge API Key'], str):
         raise TypeError("Curseforge API key should be a string or None.")
-
+    
     defaults = {
         "Check for RMMUD Updates": True,
         "Downloads Folder": "RMMUDDownloads",
         "Instances Folder": "RMMUDInstances"
     }
-
+    
     for key, value in defaults.items():
         config[key] = config.get(key, value)
         if not isinstance(config[key], type(value)):
             raise TypeError(f"{key} should be a {type(value).__name__}.")
-
+    
     logging.debug(f'Done verifying config variable types.')
     
     logging.debug(f'Done loading config.')
