@@ -170,7 +170,7 @@ def getGithubLatestReleaseTag(tags_url: str = "https://api.github.com/repos/Rand
         logging.exception(e)
         raise e
 
-def compareTwoVersions(compare_version: str, current_version: str = __version__) -> Literal['higher', 'lower', 'same']:
+def compareTwoVersions(compare_version: str, current_version: str = __version__):
     logging.debug(f'Comparing two versions together')
     current_parts = current_version.split('.')
     compare_parts = compare_version.split('.')
