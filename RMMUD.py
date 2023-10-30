@@ -604,10 +604,10 @@ def deleteDuplicateMods(instances: Instances) -> None:
             instance_dir = instance['Directory'] if instance['Directory'] != None else ""
             scanFolder(instance_dir)
         else:
-            logging.warning(f"Cannot auto-delete old mods in {instance['Directory']}: Only fabric mods supported atm.")
+            logging.warning(f'Cannot auto-delete old mods in {instance_dir}: Only fabric mods supported atm.')
 
 # REVIEW
-def main() -> None:
+def main():
     logging.debug(f'Running main body of script')
     
     config = loadConfigFile()
