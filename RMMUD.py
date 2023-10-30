@@ -495,10 +495,10 @@ def updateMods(instances: ParsedInstances, config: Config) -> None:
         for minecraft_version in instances[mod_loader]['mods']:
             directory = ""
             try:
-                directory = os.path.join(config['Downloads Folder'], mod_loader, minecraft_version)
-                os.makedirs(directory, exist_ok = True)
+                dir = os.path.join(config['Downloads Folder'], mod_loader, minecraft_version)
+                os.makedirs(dir, exist_ok = True)
             except Exception as e:
-                logging.warning(f'Could not create download folder {directory}: {e}')
+                logging.warning(f'Could not create download folder {dir}: {e}')
                 raise e
     
     logging.info(f'UPDATING MODS')
