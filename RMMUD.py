@@ -565,7 +565,7 @@ def deleteDuplicateMods(instances: Instances) -> None:
     for instance_name, instance in instances.items():
         logging.info(f'Deleting old mods from instance: {instance_name}')
         if instance['Loader'] == 'fabric':
-            instance_dir = instance['Directory'] if instance['Directory'] != None else ""
+            instance_dir = instance['Directory']
             scanFolder(instance_dir)
         else:
             logging.warning(f'Cannot auto-delete old mods in {instance_dir}: Only fabric mods supported atm.')
