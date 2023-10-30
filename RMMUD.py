@@ -17,64 +17,23 @@ __version__ = '.'.join(str(x) for x in __version_info__)
 # sydney = <3 for gian 4 evr
 # ^^^ My girlfriend wrote this for me, I am not removing it.
 
-Mods = dict[str, list[str] | dict[str, list[str]]] | list[str] | str
 Config = TypedDict("Config", {
     "CurseForge API Key": str | None,
     "Check for RMMUD Updates": bool,
     "Downloads Folder": str,
     "Instances Folder": str,
 })
+
 Instance = TypedDict("Instance", {
     "Enabled": bool,
     "Loader": str,
     "Directory": str | None,
-    "Mods": Mods,
+    "Mods": dict[str, list[str] | dict[str, list[str]]] | list[str] | str,
     "Version": str
 })
+
 Instances = dict[str, Instance]
-ParsedInstances = dict[str, dict[str, dict[str, dict[
-    str, dict[str, dict[str, dict[str, list[str]]]]]]]]
-CFHashes = TypedDict("CFHashes", {
-    "value": str,
-    "algo": int
-})
-CFGameVersion = TypedDict("CFGameVersion", {
-    "gameVersionName": str,
-    "gameVersionPadded": int,
-    "gameVersion": str,
-    "gameVersionReleaseDate": str,
-    "gameVersionTypeId": int
-})
-CFDependencies = TypedDict("CFDependencies", {
-    "modId": int,
-    "relationType": int
-})
-CFModules = TypedDict("CFModules", {
-    "name": str,
-    "fingerprint": int
-})
-CFVersionFile = TypedDict("CFVersionFile", {
-    "id": int,
-    "gameId": int,
-    "modId": int,
-    "isAvailable": bool,
-    "displayName": str,
-    "fileName": str,
-    "releaseType": int,
-    "fileStatus": int,
-    "hashes": list[CFHashes],
-    "fileDate": str,
-    "fileLength": int,
-    "downloadCount": int,
-    "downloadUrl": str | None,
-    "gameVersions": list[str],
-    "sortableGameVersions": list[CFGameVersion],
-    "dependencies": list[CFDependencies],
-    "alternateFileId": int,
-    "isServerPack": bool,
-    "fileFingerprint": int,
-    "modules": list[CFModules]
-})
+ParsedInstances = dict[str, dict[str, dict[str, dict[str, dict[str, dict[str, dict[str, list[str]]]]]]]]
 
 def extractNestedStrings(iterable: str | list | dict | tuple) -> list[str]:
     logging.debug('Extracting nested strings')
