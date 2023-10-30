@@ -265,6 +265,7 @@ def loadInstanceFile(path: str) -> Instance:
 
     logging.debug(f'Done verifying instance variable types.')
 
+    
     data["Loader"] = data["Loader"].lower()
 
     logging.debug(f'Done reading instance file')
