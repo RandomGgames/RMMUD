@@ -310,7 +310,7 @@ def parseInstances(instances: Instances) -> ParsedInstances:
     logging.debug('Parsing enabled instances')
     parsed_instances: ParsedInstances = {}
     
-    for _, instance in instances.items():
+    for instance_name, instance in instances.items():
         mod_loader = str(instance['Loader']).lower()
         minecraft_version = str(instance['Version'])
         instance_dir = str(instance['Directory'])
