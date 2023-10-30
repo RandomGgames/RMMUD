@@ -237,7 +237,7 @@ def loadConfigFile(path: str = "RMMUDConfig.yaml") -> Config:
         logging.error(f'Could not load config.')
         logging.exception(e)
         raise e
-
+    
     logging.debug(f'Verifying config variable types.')
 
     config['CurseForge API Key'] = config.get('CurseForge API Key', None)
@@ -259,7 +259,7 @@ def loadConfigFile(path: str = "RMMUDConfig.yaml") -> Config:
             raise TypeError(f"{key} should be a {type(value).__name__}.")
 
     logging.debug(f'Done verifying config variable types.')
-
+    
     logging.debug(f'Done loading config.')
     return config
 
@@ -272,7 +272,7 @@ def loadInstanceFile(path: str) -> Instance:
         logging.error(f'Could not load config.')
         logging.exception(e)
         raise e
-
+    
     logging.debug(f'Verifying instance variable types.')
 
     defaults = {
@@ -383,7 +383,7 @@ def parseInstances(instances: Instances) -> ParsedInstances:
             
             if instance_dir not in parsed_instances[mod_loader]['mods'][minecraft_version][mod_id][url_authority][mod_version]['directories']:
                 parsed_instances[mod_loader]['mods'][minecraft_version][mod_id][url_authority][mod_version]['directories'].append(instance_dir)
-
+    
     return parsed_instances
 
 def downloadModrinthMod(mod_id: str, mod_loader: str, minecraft_version: str, mod_version: str,
