@@ -243,7 +243,7 @@ def loadInstanceFile(path: str) -> Instance:
         raise e
     
     logging.debug(f'Verifying instance variable types.')
-
+    
     defaults = {
         "Enabled": True,
         "Loader": "",
@@ -251,7 +251,7 @@ def loadInstanceFile(path: str) -> Instance:
         "Mods": [None, "", [...], {...: ...}],
         "Version": ""
     }
-
+    
     for key, value in defaults.items():
         if not isinstance(value, list):
             data[key] = data.get(key, value)
@@ -262,12 +262,11 @@ def loadInstanceFile(path: str) -> Instance:
             if not any(isinstance(data[key], type(val)) for val in value):
                 raise TypeError(f"The {key} option in the instance file {path} " +
                                 f"should be a {' / '.join(str(type(val).__name__) for val in value)}")
-
+    
     logging.debug(f'Done verifying instance variable types.')
-
     
     data["Loader"] = data["Loader"].lower()
-
+    
     logging.debug(f'Done reading instance file')
     return data
 
