@@ -105,7 +105,7 @@ def extractNestedStrings(iterable: str | list | dict | tuple) -> list[str]:
     logging.debug('Done extracting nested strings')
     return extract(iterable)
 
-def readYAML(path):
+def readYAML(path: str) -> Config | Instance:
     logging.debug(f'Reading the YAML file "{path}".')
     try:
         with open(path, 'r') as f:
