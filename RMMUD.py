@@ -493,7 +493,7 @@ def updateMods(instances: ParsedInstances, config: Config) -> None:
     logging.debug(f'Creating folders to download mods into')
     for mod_loader in instances:
         for minecraft_version in instances[mod_loader]['mods']:
-            directory = ""
+            dir = ""
             try:
                 dir = os.path.join(config['Downloads Folder'], mod_loader, minecraft_version)
                 os.makedirs(dir, exist_ok = True)
