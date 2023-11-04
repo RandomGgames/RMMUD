@@ -71,14 +71,14 @@ def checkIfZipIsCorrupted(path: str) -> bool:
     try:
         with zipfile.ZipFile(path) as zip_file:
             zip_file.testzip()
-            logging.debug(f'The ZIP file "{path}" is not corrupted.')
+            logging.debug(f'The ZIP file is not corrupted.')
             return False
     except zipfile.BadZipFile as e:
-        logging.warning(f'The ZIP file "{path}" is corrupted or not a valid ZIP file.')
+        logging.warning(f'The ZIP file is corrupted or not a valid ZIP file.')
         logging.exception(e)
         return True
     except Exception as e:
-        logging.error(f'An error occurred while checking if "{path}" is corrupted.')
+        logging.error(f'An error occurred while checking if it is corrupted.')
         logging.exception(e)
         raise e
 
