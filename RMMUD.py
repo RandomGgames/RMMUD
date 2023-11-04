@@ -41,22 +41,18 @@ def extractNestedStrings(iterable: str | list | dict | tuple) -> list[str]:
         match iterable:
             case dict():
                 for value in iterable.values():
-                    if isinstance(value, list):
-                        strings += extract(value)
-                        continue
-                    for subvalue in value:
-                        strings += extract(subvalue)
-            case (list, tuple):
+                    strings += extract(value)
+            case list():
                 for item in iterable:
                     strings += extract(item)
             case str():
                 if iterable not in strings:
                     strings.append(iterable)
-            case _:
-                logging.debug(f'Cannot handle {iterable} which is type {type(iterable).__name__}. It will be ignored.')
         return strings
+    extracted_strings = extract(iterable)
     logging.debug('Done extracting nested strings')
-    return extract(iterable)
+    return extracted_strings
+
 
 def readYAML(path: str) -> Config | Instance:
     logging.debug(f'Reading the YAML file "{path}".')
