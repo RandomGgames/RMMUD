@@ -552,6 +552,6 @@ if __name__ == '__main__':
     try:
         main()
     except Exception as e:
-        logging.error(e)
-        input(f'The script could no longer continue to function due to the error described above. Please fix the issue described or go to https://github.com/RandomGgames/RMMUD to request help/report a bug')
+        logging.error(f'{repr(e)}\nThe script could no longer continue to function due to the error described above. Please fix the issue described or go to https://github.com/RandomGgames/RMMUD to request help/report a bug')
+        input('Press any key to exit.')
         exit(1)
