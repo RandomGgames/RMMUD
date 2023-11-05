@@ -11,7 +11,7 @@ from datetime import datetime
 from urllib.parse import urlparse
 from typing import Literal, TypedDict
 
-__version_info__ = (3, 7, 0)
+__version_info__ = (3, 7, 0, 'Pre')
 __version__ = '.'.join(str(x) for x in __version_info__)
 
 # sydney = <3 for gian 4 evr
