@@ -9,7 +9,7 @@ import yaml
 import zipfile
 from datetime import datetime
 from urllib.parse import urlparse
-from typing import Literal, TypedDict
+import typing
 
 __version_info__ = (3, 7, 0, 'Pre1')
 __version__ = '.'.join(str(x) for x in __version_info__)
@@ -18,21 +18,21 @@ __version__ = '.'.join(str(x) for x in __version_info__)
 # ^^^ My girlfriend wrote this for me, I am not removing it.
 
 """Type Hints"""
-Config = TypedDict("Config", {
+Config = typing.TypedDict("Config", {
     "CurseForge API Key": str | None,
     "Check for RMMUD Updates": bool,
     "Downloads Folder": str,
     "Instances Folder": str,
 })
-Instance = TypedDict("Instance", {
+Instance = typing.TypedDict("Instance", {
     "Enabled": bool,
     "Loader": str,
     "Directory": str | None,
     "Mods": dict[str, list[str] | dict[str, list[str]]] | list[str] | str,
     "Version": str
 })
-Instances = dict[str, Instance]
-ParsedInstances = dict[str, dict[str, dict[str, dict[str, dict[str, dict[str, dict[str, list[str]]]]]]]]
+Instances = dict[Instance]
+ParsedInstances = dict[str, dict[str, list[str]]]
 
 def extractNestedStrings(iterable: str | list | dict | tuple) -> list[str]:
     logging.debug('Extracting nested strings')
