@@ -82,45 +82,44 @@ def checkIfZipIsCorrupted(path: str) -> bool:
         logging.exception(e)
         raise e
 
-def getGithubLatestReleaseTag(tags_url: str = "https://api.github.com/repos/RandomGgames/RMMUD/tags") -> str:
-    logging.debug('Getting latest github release version.')
-    try:
-        release_version: str = requests.get(tags_url).json()[0]["name"]
-        logging.debug(f'Done getting latest github release version ({release_version}).')
-        return release_version
-    except Exception as e:
-        logging.warning(f'Could not get latest github release version.')
-        logging.exception(e)
-        raise e
-
-def compareTwoVersions(compare_version: str, current_version: str = __version__) -> Literal['higher', 'lower', 'same']:
-    logging.debug(f'Comparing two versions together')
-    current_parts = current_version.split('.')
-    compare_parts = compare_version.split('.')
-    for i in range(max(len(current_parts), len(compare_parts))):
-        current_part = int(current_parts[i]) if i < len(current_parts) else 0
-        compare_part = int(compare_parts[i]) if i < len(compare_parts) else 0
-        if int(compare_part) > int(current_part):
-            logging.debug(f'The compare_version is higher than the current_version')
-            return 'higher'
-        elif int(compare_part) < int(current_part):
-            logging.debug(f'The compare_version is lower than the current_version')
-            return 'lower'
-    logging.debug(f'The compare_version is the same as the current_version')
-    return 'same'
-
 def checkForUpdate() -> bool | None:
     logging.info('Checking for an RMMUD update.')
     
-    current_version = __version__
-    logging.debug(f'{current_version = }')
+    def getGithubLatestReleaseTag(tags_url: str = "https://api.github.com/repos/RandomGgames/RMMUD/tags") -> str:
+        logging.debug('Getting latest github release version.')
+        try:
+            release_version: str = requests.get(tags_url).json()[0]["name"]
+            logging.debug(f'Done getting latest github release version ({release_version}).')
+            return release_version
+        except Exception as e:
+            logging.warning(f'Could not get latest github release version.')
+            logging.exception(e)
+            raise e
     
+    def compareTwoVersions(compare_version: str, current_version: str = __version__) -> typing.Literal['higher', 'lower', 'same']:
+        logging.debug(f'Comparing two versions together')
+        current_parts = current_version.split('.')
+        compare_parts = compare_version.split('.')
+        for i in range(max(len(current_parts), len(compare_parts))):
+            current_part = int(current_parts[i]) if i < len(current_parts) else 0
+            compare_part = int(compare_parts[i]) if i < len(compare_parts) else 0
+            if int(compare_part) > int(current_part):
+                logging.debug(f'The compare_version is higher than the current_version')
+                return 'higher'
+            elif int(compare_part) < int(current_part):
+                logging.debug(f'The compare_version is lower than the current_version')
+                return 'lower'
+        logging.debug(f'The compare_version is the same as the current_version')
+        return 'same'
+    
+    current_version = __version__
     try:
         github_version = getGithubLatestReleaseTag()
     except Exception as e:
         logging.warning('Could not check for an RMMUD Update.')
         logging.exception(e)
         return None
+    logging.debug(f'{current_version = }')
     logging.debug(f'{github_version = }')
     
     logging.debug('Comparing github and current versions.')
