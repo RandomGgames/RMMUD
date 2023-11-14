@@ -514,7 +514,10 @@ def main():
     logging.debug(f'Running main body of script')
     
     config = loadConfigFile()
-    if config['Check for RMMUD Updates']: checkForUpdate()
+    try:
+        if config['Check for RMMUD Updates']: checkForUpdate()
+    except Exception as e:
+        logging.warning(f'Could not check for updates due to {repr(e)}... Update checks will have to be done manually due to the current or latest version tag.')
     
     instances = loadInstances(config['Instances Folder'])
     parsed_instances = parseInstances(instances)
