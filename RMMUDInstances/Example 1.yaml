@@ -1,7 +1,7 @@
-Enabled: false
+Enabled: true
 Loader: Fabric
-Version: 1.20.2
-Directory: ./.minecraft
+Version: '1.20.2'
+Directory: './.minecraft'
 Mods:
   - https://modrinth.com/mod/fabric-api
   - https://modrinth.com/mod/iris
