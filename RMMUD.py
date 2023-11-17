@@ -1,15 +1,15 @@
-import json
 import logging
+import json
 import os
 import requests
 import shutil
 import sys
+import typing
 import webbrowser
 import yaml
 import zipfile
 from datetime import datetime
 from urllib.parse import urlparse
-import typing
 
 __version_info__ = (3, 7, 1)
 __version__ = '.'.join(str(x) for x in __version_info__)
