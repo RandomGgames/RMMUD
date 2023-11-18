@@ -37,24 +37,29 @@ Instances = dict[Instance]
 ParsedInstances = dict[str, dict[str, list[str]]]
 
 def extractNestedStrings(iterable: str | list | dict | tuple) -> list[str]:
-    logger.debug('Extracting nested strings')
+    logger.debug('Extracting nested strings...')
     def extract(iterable: str | list | dict | tuple) -> list[str]:
         strings: list[str] = []
         match iterable:
             case dict():
                 for value in iterable.values():
                     strings += extract(value)
-            case list():
+            case (list(), tuple()):
                 for item in iterable:
                     strings += extract(item)
             case str():
                 if iterable not in strings:
                     strings.append(iterable)
+            case _:
+                logger.warning(f'An invalid variable "{iterable}" of type "{type(iterable)}" was ignored.')
         return strings
-    extracted_strings = extract(iterable)
-    logger.debug('Done extracting nested strings')
-    return extracted_strings
-
+    try:
+        extracted_strings = extract(iterable)
+        logger.debug('Extracted nested strings.')
+        return extracted_strings
+    except Exception as e:
+        logger.error(f'An error occured while extracting nested strings due to {repr(e)}')
+        raise e
 
 def readYAML(path: str) -> Config | Instance:
     logger.debug(f'Reading the YAML file "{path}".')
