@@ -299,57 +299,56 @@ def loadInstances(instances_dir: str) -> list[RMMUDInstance]: # TODO Rework this
             continue
     return enabled_instances
 
-def parseInstances(instances: Instances) -> ParsedInstances:
-    logger.debug('Parsing enabled instances')
-    parsed_instances: ParsedInstances = {}
-    
-    for instance_name, instance in instances.items():
-        mod_loader = str(instance['Loader']).lower()
-        minecraft_version = str(instance['Version'])
-        instance_dir = str(instance['Directory'])
-        mods = extractNestedStrings(instance['Mods'])
-        
-        for mod_url in mods:
-            url_authority = urlparse(mod_url).netloc
-            mod_version = 'latest_version'
-            if url_authority == "": continue # Probably a disabled mod just ignore it.
-            url_authority = url_authority.lstrip('www.')
-            
-            if url_authority == 'modrinth.com':
-                url_path = urlparse(mod_url).path
-                url_path_split = url_path.split('/')[1:]
-                
-                if url_path_split[0] not in ('mod', 'plugin', 'datapack'):
-                    continue
-                
-                mod_id = url_path_split[1]
-                
-                if len(url_path_split) == 4 and url_path_split[2] == 'version':
-                    mod_version = url_path_split[3]
-            
-            elif url_authority == 'curseforge.com':
-                url_path = urlparse(mod_url).path
-                url_path_split = url_path.split('/')[1:]
-                
-                if url_path_split[0] != 'minecraft' or url_path_split[1] != 'mc-mods':
-                    logger.warning(f'Url "{mod_url}" is not for a minecraft mod!')
-                    continue
-                
-                mod_id = url_path_split[2]
-                
-                if len(url_path_split) == 5 and url_path_split[3] == 'files':
-                    mod_version = url_path_split[4]
-            
-            else: # Unsupported website
-                logger.warning(f'Mod manager cannot handle URLs from "{url_authority}". {mod_url}')
-                continue
-            
-            parsed_instances.setdefault(mod_loader, {}).setdefault('mods', {}).setdefault(minecraft_version, {}).setdefault(mod_id, {}).setdefault(url_authority, {}).setdefault(mod_version, {}).setdefault('directories', [])
-            
-            if instance_dir not in parsed_instances[mod_loader]['mods'][minecraft_version][mod_id][url_authority][mod_version]['directories']:
-                parsed_instances[mod_loader]['mods'][minecraft_version][mod_id][url_authority][mod_version]['directories'].append(instance_dir)
-    
-    return parsed_instances
+#def parseInstances(instances: list[RMMUDInstance]) -> RMMUDInstance: # TODO This function is probably no longer required...
+#    logger.debug('Parsing enabled instances')
+#    
+#    for instance_name, instance in instances.items():
+#        mod_loader = str(instance['Loader']).lower()
+#        minecraft_version = str(instance['Version'])
+#        instance_dir = str(instance['Directory'])
+#        mods = extractNestedStrings(instance['Mods'])
+#        
+#        for mod_url in mods:
+#            url_authority = urlparse(mod_url).netloc
+#            mod_version = 'latest_version'
+#            if url_authority == "": continue # Probably a disabled mod just ignore it.
+#            url_authority = url_authority.lstrip('www.')
+#            
+#            if url_authority == 'modrinth.com':
+#                url_path = urlparse(mod_url).path
+#                url_path_split = url_path.split('/')[1:]
+#                
+#                if url_path_split[0] not in ('mod', 'plugin', 'datapack'):
+#                    continue
+#                
+#                mod_id = url_path_split[1]
+#                
+#                if len(url_path_split) == 4 and url_path_split[2] == 'version':
+#                    mod_version = url_path_split[3]
+#            
+#            elif url_authority == 'curseforge.com':
+#                url_path = urlparse(mod_url).path
+#                url_path_split = url_path.split('/')[1:]
+#                
+#                if url_path_split[0] != 'minecraft' or url_path_split[1] != 'mc-mods':
+#                    logger.warning(f'Url "{mod_url}" is not for a minecraft mod!')
+#                    continue
+#                
+#                mod_id = url_path_split[2]
+#                
+#                if len(url_path_split) == 5 and url_path_split[3] == 'files':
+#                    mod_version = url_path_split[4]
+#            
+#            else: # Unsupported website
+#                logger.warning(f'Mod manager cannot handle URLs from "{url_authority}". {mod_url}')
+#                continue
+#            
+#            parsed_instances.setdefault(mod_loader, {}).setdefault('mods', {}).setdefault(minecraft_version, {}).setdefault(mod_id, {}).setdefault(url_authority, {}).setdefault(mod_version, {}).setdefault('directories', [])
+#            
+#            if instance_dir not in parsed_instances[mod_loader]['mods'][minecraft_version][mod_id][url_authority][mod_version]['directories']:
+#                parsed_instances[mod_loader]['mods'][minecraft_version][mod_id][url_authority][mod_version]['directories'].append(instance_dir)
+#    
+#    return parsed_instances
 
 def downloadModrinthMod(mod_id: str, mod_loader: str, minecraft_version: str, mod_version: str,
                         download_dir: str, instance_dirs: list[str]) -> None:
@@ -565,13 +564,13 @@ def main():
         logger.warning(f'Could not check for updates due to {repr(e)}... Update checks will have to be done manually due to the current or latest version tag.')
     
     instances = loadInstances(config['Instances Folder'])
-    parsed_instances = parseInstances(instances)
+    #parsed_instances = parseInstances(instances)
     
-    if len(parsed_instances) == 0:
-        logger.info(f'No instances exist!')
-    else:
-        updateMods(parsed_instances, config)
-        deleteDuplicateMods(instances)
+    #if len(parsed_instances) == 0:
+    #    logger.info(f'No instances exist!')
+    #else:
+    #    updateMods(parsed_instances, config)
+    #    deleteDuplicateMods(instances)
     
     logger.info('Done.')
 
