@@ -19,22 +19,21 @@ __version__ = '.'.join(str(x) for x in __version_info__)
 # sydney = <3 for gian 4 evr
 # ^^^ My girlfriend wrote this for me, I am not removing it.
 
-"""Type Hints"""
-Config = typing.TypedDict("Config", {
-    "CurseForge API Key": str | None,
-    "Check for RMMUD Updates": bool,
-    "Downloads Folder": str,
-    "Instances Folder": str,
-})
-Instance = typing.TypedDict("Instance", {
-    "Enabled": bool,
-    "Loader": str,
-    "Directory": str | None,
-    "Mods": dict[str, list[str] | dict[str, list[str]]] | list[str] | str,
-    "Version": str
-})
-Instances = dict[Instance]
-ParsedInstances = dict[str, dict[str, list[str]]]
+class RMMUDConfiguration:
+    def __init__(self, check_for_updates: bool, downloads_folder: str, instances_folder: str, curseforge_api_key: str | None):
+        self.curseforge_api_key = curseforge_api_key
+        self.check_for_updates = check_for_updates
+        self.downloads_folder = downloads_folder
+        self.instances_folder = instances_folder
+
+class RMMUDInstance:
+    def __init__(self, enabled: bool, loader: typing.Literal['Fabric', 'Forge'], directory: str | None, mods: dict | list, version: str):
+        self.enabled = enabled
+        self.loader = loader
+        self.directory = directory
+        self.mods = mods
+        self.version = version
+        self.parsed_mods = extractNestedStrings(mods)
 
 def extractNestedStrings(iterable: str | list | dict | tuple) -> list[str]:
     logger.debug('Extracting nested strings...')
@@ -174,9 +173,9 @@ def copyToPathOrPaths(file_path: Path, destination_file_path_or_paths: Path | li
             logger.warning(f'Could not copy file to path(s) due to invalid destination input "{destination_file_path_or_paths}"')
             raise ValueError(destination_file_path_or_paths)
 
-def loadConfigFile(path: str = "RMMUDConfig.yaml") -> Config:
     logger.info(f'Loading config.')
     
+def loadConfigFile(path: str = "RMMUDConfig.yaml") -> RMMUDConfiguration:
     try:
         config = readYAML(path)
     except Exception as e:
@@ -196,7 +195,8 @@ def loadConfigFile(path: str = "RMMUDConfig.yaml") -> Config:
     defaults = {
         "Check for RMMUD Updates": True,
         "Downloads Folder": "RMMUDDownloads",
-        "Instances Folder": "RMMUDInstances"
+        "Instances Folder": "RMMUDInstances",
+        "CurseForge API Key": None
     }
     
     for key, value in defaults.items():
@@ -209,9 +209,9 @@ def loadConfigFile(path: str = "RMMUDConfig.yaml") -> Config:
     logger.debug(f'Done loading config.')
     return config
 
-def loadInstanceFile(path: str) -> Instance:
     logger.debug(f'Reading instance file "{path}".')
     
+def loadInstanceFile(path: str) -> typing.Type[RMMUDInstance]:
     try:
         data = readYAML(path)
     except Exception as e:
