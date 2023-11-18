@@ -61,16 +61,15 @@ def extractNestedStrings(iterable: str | list | dict | tuple) -> list[str]:
         logger.error(f'An error occured while extracting nested strings due to {repr(e)}')
         raise e
 
-def readYAML(path: str) -> Config | Instance:
-    logger.debug(f'Reading the YAML file "{path}".')
+def readYAML(path: str) -> dict:
     try:
+        logger.debug(f'Reading the YAML file located at "{path}"...')
         with open(path, 'r') as f:
             data = yaml.load(f, yaml.SafeLoader)
-            logger.debug(f'Done reading the YAML file.')
+            logger.debug(f'YAML file read completed.')
             return data
     except Exception as e:
-        logger.error(f'Could not read the YAML file "{path}".')
-        logger.exception(e)
+        logger.error(f'An error occured while reading the YAML file due to {repr(e)}')
         raise e
 
 def checkIfZipIsCorrupted(path: str) -> bool:
