@@ -13,7 +13,7 @@ RMMUD is short for "RandomGgames' Minecraft Mod Updater and Downloader". This is
 
 # How to use
 - Extract files to a folder (not extract here)
-- Configure the instances inside the RMMUDInstanced folder
+- Configure the instances inside the RMMUDInstances folder
 - Open the "RMMUDConfig.yaml" file and add a CurseForge API if using CurseForge links anywhere
 - Run "RMMUD.py"
 
