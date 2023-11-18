@@ -124,33 +124,56 @@ def getGithubLatestReleaseTag(url: typing.URL, include_prerelleases: bool = Fals
         logger.error(f'An error occured while getting latest github release version due to {repr(e)}')
         raise e
 
-def checkForUpdate() -> bool | None:
-    logger.info('Checking for an RMMUD update.')
-    current_version = __version__
+def promptToOpenURL(url_name: str, prompt_message: str, url: str) -> None | False:
     try:
-        github_version = getGithubLatestReleaseTag()
+        logger.debug(f'Prompting to open {url_name}...')
+        open_update = input(f'{prompt_message} Y/N').lower()
+        if open_update in ('y'):
+            logger.debug('Prompt approved.')
+            logger.debug(f'Opening {url_name}...')
+            webbrowser.open(url)
+            logger.debug(f'Opened {url_name}...')
+            return True
+        else:
+            logger.debug('Prompt denied.')
+            return False
     except Exception as e:
-        logger.warning('Could not check for an RMMUD Update.')
-        logger.exception(e)
-        return None
-    logger.debug(f'{current_version = }')
-    logger.debug(f'{github_version = }')
+        logger.warning(f'An error occured while prompting to open {url_name} due to {repr(e)}')
+        return False
+
+def checkForUpdate() -> bool | None:
+    logger.info('Checking for an RMMUD update...')
     
-    logger.debug('Comparing github and current versions.')
-    version_check = compareTwoVersions(github_version, __version__)
+    try:
+        current_version = __version__
+        logging.debug(f'Getting github\'s version...')
+        github_version = getGithubLatestReleaseTag()
+        logging.debug(f'Got github\'s version.')
+    except Exception as e:
+        logger.warning(f'An error occured while getting github\'s version due to {repr(e)}. Due to this error, checking for updates could not continue.')
+        return None
+    
+    try:
+        logger.debug('Comparing two versions...')
+        version_check = compareTwoVersions(github_version, __version__)
+        logger.debug(f'Compared two versions.')
+    except Exception as e:
+        logger.warning(f'An error occured while comparing two versions due to {repr(e)}. Due to this error, checking for updates could not continue.')
+        return None
+    
     match version_check:
-        case "higher":
-            logger.info(f'There is an update available! ({current_version} (current) → {github_version} (latest)).\nDo you want to open the GitHub releases page to download it right now? (yes/no): ')
-            open_update = input('Open releases page? ').lower()
-            if open_update in ("yes", "y"):
-                url = "https://github.com/RandomGgames/RMMUD/releases"
-                webbrowser.open(url)
+        case 'higher':
+            try:
+                logger.info(f'There is an update available! ({current_version} (current) → {github_version} (latest))')
+                promptToOpenURL('downloads page', 'Would you like to open the downloads page?', 'https://github.com/RandomGgames/RMMUD/releases')
                 exit()
-        case "lower":
+            except:
+                return None
+        case 'lower':
             logger.info(f'You are on what seems like a work in progress version, as it is higher than the latest release. Please report any bugs onto the github page at https://github.com/RandomGgames/RMMUD')
             return False
-        case "same":
-            logger.info(f'You are on the latest version already.')
+        case 'same':
+            logger.info(f'You are already on the latest version.')
             return None
 
 def copyToPathOrPaths(file_path: Path, destination_file_path_or_paths: Path | list[Path]) -> None:
