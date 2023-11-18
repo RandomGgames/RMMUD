@@ -90,15 +90,15 @@ def checkIfZipIsCorrupted(path: str) -> bool:
 def checkForUpdate() -> bool | None:
     logger.info('Checking for an RMMUD update.')
     
-    def getGithubLatestReleaseTag(tags_url: str = "https://api.github.com/repos/RandomGgames/RMMUD/tags") -> str:
-        logger.debug('Getting latest github release version.')
+    def getGithubLatestReleaseTag(url: str = "https://api.github.com/repos/RandomGgames/RMMUD/releases") -> str:
         try:
-            release_version: str = requests.get(tags_url).json()[0]["name"]
-            logger.debug(f'Done getting latest github release version ({release_version}).')
-            return release_version
+            logger.debug('Getting latest github release version...')
+            versions: list[dict] = requests.get(url).json()
+            latest_version = [version for version in versions if not version.get('prerelease')][0].get('tag_name', None)
+            logger.debug('Got latest github release version.')
+            return latest_version
         except Exception as e:
-            logger.warning(f'Could not get latest github release version.')
-            logger.exception(e)
+            logger.error(f'An error occured while getting latest github release version due to {repr(e)}')
             raise e
     
     def compareTwoVersions(v1: str, v2: str) -> typing.Literal['higher', 'lower', 'same']:
