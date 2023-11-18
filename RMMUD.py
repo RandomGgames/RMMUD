@@ -173,8 +173,6 @@ def copyToPathOrPaths(file_path: Path, destination_file_path_or_paths: Path | li
             logger.warning(f'Could not copy file to path(s) due to invalid destination input "{destination_file_path_or_paths}"')
             raise ValueError(destination_file_path_or_paths)
 
-    logger.info(f'Loading config.')
-    
 def loadConfigFile(path: str = "RMMUDConfig.yaml") -> RMMUDConfiguration:
     try:
         logger.info(f'Loading config...')
