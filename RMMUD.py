@@ -101,21 +101,30 @@ def checkForUpdate() -> bool | None:
             logger.exception(e)
             raise e
     
-    def compareTwoVersions(compare_version: str, current_version: str = __version__) -> typing.Literal['higher', 'lower', 'same']:
-        logger.debug(f'Comparing two versions together')
-        current_parts = current_version.split('.')
-        compare_parts = compare_version.split('.')
-        for i in range(max(len(current_parts), len(compare_parts))):
-            current_part = int(current_parts[i]) if i < len(current_parts) else 0
-            compare_part = int(compare_parts[i]) if i < len(compare_parts) else 0
-            if int(compare_part) > int(current_part):
-                logger.debug(f'The compare_version is higher than the current_version')
-                return 'higher'
-            elif int(compare_part) < int(current_part):
-                logger.debug(f'The compare_version is lower than the current_version')
-                return 'lower'
-        logger.debug(f'The compare_version is the same as the current_version')
-        return 'same'
+    def compareTwoVersions(v1: str, v2: str) -> typing.Literal['higher', 'lower', 'same']:
+        try:
+            logger.debug(f'Comparing two versions together...')
+            v1_list = list(map(int, v1.split('.')))
+            v2_list = list(map(int, v2.split('.')))
+            max_elements = max(len(v1_list), len(v2_list))
+            
+            while len(v1_list) < max_elements:
+                v1_list.append(0)
+            while len(v2_list) < max_elements:
+                v2_list.append(0)
+            
+            for i in range(min(len(v1_list), len(v2_list))):
+                if v1_list[i] > v2_list[i]:
+                    logging.debug('v1 is higher than v2.')
+                    return 'higher'
+                elif v1_list[i] < v2_list[i]:
+                    logging.debug(f'v1 is lower than v2.')
+                    return 'lower'
+            logging.debug(f'v1 is the same as v2.')
+            return 'same'
+        except Exception as e:
+            logger.error(f'An error occured while comparing two versions together due to {repr(e)}')
+            raise e
     
     current_version = __version__
     try:
