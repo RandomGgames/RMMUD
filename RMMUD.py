@@ -73,19 +73,18 @@ def readYAML(path: str) -> dict:
         raise e
 
 def checkIfZipIsCorrupted(path: str) -> bool:
-    logger.debug(f'Checking if "{path}" is corrupted.')
     try:
+        logger.debug(f'Checking if zip located at "{path}" is corrupted.')
         with zipfile.ZipFile(path) as zip_file:
             zip_file.testzip()
-            logger.debug(f'The ZIP file is not corrupted.')
+            logger.debug(f'Checked if zip is corrupted (it\'s not).')
             return False
     except zipfile.BadZipFile as e:
-        logger.warning(f'The ZIP file is corrupted or not a valid ZIP file.')
+        logger.debug(f'Checked if zip is corrupted (it is).')
         logger.exception(e)
         return True
     except Exception as e:
-        logger.error(f'An error occurred while checking if it is corrupted.')
-        logger.exception(e)
+        logger.error(f'An error occurred while checking if zip is corrupted due to {repr(e)}')
         raise e
 
 def checkForUpdate() -> bool | None:
