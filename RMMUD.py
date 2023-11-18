@@ -141,16 +141,26 @@ def checkForUpdate() -> bool | None:
             logger.info(f'You are on the latest version already.')
             return None
 
-def copyToFolders(file_path: str, destination_path: str) -> None:
-    logger.debug(f'Copying "{file_path}" into "{destination_path}".')
-    try:
-        shutil.copy2(file_path, destination_path)
-        logger.debug(f'Successfully coppied.')
-        return
-    except Exception as e:
-        logger.warning(f'Could not copy "{file_path}" into "{destination_path}".')
-        logger.exception(e)
-        raise e
+def copyToPathOrPaths(file_path: Path, destination_file_path_or_paths: Path | list[Path]) -> None:
+    match destination_file_path_or_paths:
+        case destination_file_path if isinstance(destination_file_path, Path):
+            logger.debug(f'Copying "{file_path}" into "{destination_file_path}".')
+            try:
+                shutil.copy2(file_path, destionation_file_path)
+                logger.debug(f'Successfully coppied.')
+            except Exception as e:
+                logger.warning(f'An error occured while copying "{file_path}" to "{destination_file_path}" due to {repr(e)}')
+        case destination_file_paths if isinstance(destination_file_paths, list[Path]):
+            for destionation_file_path in destination_file_path_or_paths:
+                logger.debug(f'Copying "{file_path}" into "{destination_file_path}".')
+                try:
+                    shutil.copy2(file_path, destionation_file_path)
+                    logger.debug(f'Successfully coppied.')
+                except Exception as e:
+                    logger.warning(f'An error occured while copying "{file_path}" to "{destination_file_path}" due to {repr(e)}')
+        case _:
+            logger.warning(f'Could not copy file to path(s) due to invalid destination input "{destination_file_path_or_paths}"')
+            raise ValueError(destination_file_path_or_paths)
 
 def loadConfigFile(path: str = "RMMUDConfig.yaml") -> Config:
     logger.info(f'Loading config.')
