@@ -86,19 +86,21 @@ def checkIfZipIsCorrupted(path: str) -> bool:
         logger.error(f'An error occurred while checking if zip is corrupted due to {repr(e)}')
         raise e
 
+def getGithubLatestReleaseTag(url: typing.URL, include_prerelleases: bool = False) -> str:
+    try:
+        logger.debug('Getting latest github release version...')
+        versions: list[dict] = requests.get(url).json()
+        if not include_prerelleases:
+            versions = [version for version in versions if not version.get('prerelease')]
+        latest_version = versions[0].get('tag_name', None)
+        logger.debug('Got latest github release version.')
+        return latest_version
+    except Exception as e:
+        logger.error(f'An error occured while getting latest github release version due to {repr(e)}')
+        raise e
+
 def checkForUpdate() -> bool | None:
     logger.info('Checking for an RMMUD update.')
-    
-    def getGithubLatestReleaseTag(url: str = "https://api.github.com/repos/RandomGgames/RMMUD/releases") -> str:
-        try:
-            logger.debug('Getting latest github release version...')
-            versions: list[dict] = requests.get(url).json()
-            latest_version = [version for version in versions if not version.get('prerelease')][0].get('tag_name', None)
-            logger.debug('Got latest github release version.')
-            return latest_version
-        except Exception as e:
-            logger.error(f'An error occured while getting latest github release version due to {repr(e)}')
-            raise e
     
     def compareTwoVersions(v1: str, v2: str) -> typing.Literal['higher', 'lower', 'same']:
         try:
