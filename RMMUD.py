@@ -209,10 +209,9 @@ def loadConfigFile(path: str = "RMMUDConfig.yaml") -> RMMUDConfiguration:
     logger.debug(f'Done loading config.')
     return config
 
-    logger.debug(f'Reading instance file "{path}".')
-    
 def loadInstanceFile(path: str) -> typing.Type[RMMUDInstance]:
     try:
+        logger.debug(f'Reading instance file "{path}".')
         data = readYAML(path)
     except Exception as e:
         logger.error(f'Could not load config.')
