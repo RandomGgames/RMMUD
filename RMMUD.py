@@ -19,14 +19,14 @@ __version__ = '.'.join(str(x) for x in __version_info__)
 # sydney = <3 for gian 4 evr
 # ^^^ My girlfriend wrote this for me, I am not removing it.
 
-class RMMUDConfiguration:
+class Configuration:
     def __init__(self, check_for_updates: bool, downloads_folder: str = 'RMMUDDownloads', instances_folder: str = 'RMMUDInstances', curseforge_api_key: str | None = None):
         self.check_for_updates = check_for_updates
         self.downloads_folder = downloads_folder
         self.instances_folder = instances_folder
         self.curseforge_api_key = curseforge_api_key
 
-class RMMUDInstance:
+class Instance:
     def __init__(self, enabled: bool, loader: typing.Literal['Fabric', 'Forge'], directory: str | None, mods: dict | list, version: str):
         self.enabled = enabled
         self.loader = loader
@@ -197,7 +197,7 @@ def copyToPathOrPaths(file_path: Path, destination_file_path_or_paths: Path | li
             logger.warning(f'Could not copy file to path(s) due to invalid destination input "{destination_file_path_or_paths}"')
             raise ValueError(destination_file_path_or_paths)
 
-def loadConfigFile(path: str = "RMMUDConfig.yaml") -> RMMUDConfiguration: # TODO Rework this to work with class
+def loadConfigFile(config_path: str = "RMMUDConfig.yaml") -> Configuration: # TODO Rework this to work with class
     try:
         logger.info(f'Loading config...')
         config = readYAML(path)
@@ -231,7 +231,7 @@ def loadConfigFile(path: str = "RMMUDConfig.yaml") -> RMMUDConfiguration: # TODO
     logger.debug(f'Done loading config.')
     return config
 
-def loadInstanceFile(path: str) -> typing.Type[RMMUDInstance]: # TODO Rework this to work with class
+def loadInstanceFile(path: str) -> typing.Type[Instance]: # TODO Rework this to work with class
     try:
         logger.debug(f'Reading instance file "{path}".')
         data = readYAML(path)
@@ -268,7 +268,7 @@ def loadInstanceFile(path: str) -> typing.Type[RMMUDInstance]: # TODO Rework thi
     logger.debug(f'Done reading instance file')
     return data
 
-def loadInstances(instances_dir: str) -> list[RMMUDInstance]: # TODO Rework this to work with class
+def loadInstances(instances_dir: str) -> list[Instance]: # TODO Rework this to work with class
     logger.info(f'LOADING INSTANCES')
     
     if not os.path.exists(instances_dir):
@@ -280,7 +280,7 @@ def loadInstances(instances_dir: str) -> list[RMMUDInstance]: # TODO Rework this
             logger.exception(e)
             raise e
     
-    enabled_instances: list[RMMUDInstance] = {}
+    enabled_instances: list[Instance] = {}
     for instance_file in [f for f in os.listdir(instances_dir) if f.endswith('.yaml')]:
         instance_path = os.path.join(instances_dir, instance_file)
         instance_name = os.path.splitext(instance_file)[0]
@@ -299,7 +299,7 @@ def loadInstances(instances_dir: str) -> list[RMMUDInstance]: # TODO Rework this
             continue
     return enabled_instances
 
-def parseInstances(instances: list[RMMUDInstance]) -> RMMUDInstance: # TODO This function is probably no longer required...
+def parseInstances(instances: list[Instance]) -> Instance: # TODO This function is probably no longer required...
 #    logger.debug('Parsing enabled instances')
 #    
 #    for instance_name, instance in instances.items():
@@ -487,7 +487,7 @@ def downloadCurseforgeMod(mod_id: str, mod_loader: str, minecraft_version: str, 
                     logger.warning(f'Could not copy "{downloaded_file_path}" into "{instance_dir}": {e}')
                     continue
 
-def updateMods(instances: ParsedInstances, config: Config) -> None: # TODO Rework this to work with class
+def updateMods(instances: list[Instance], config: Configuration) -> None: # TODO Rework this to work with class
     logger.debug(f'Creating folders to download mods into')
     for mod_loader in instances:
         for minecraft_version in instances[mod_loader]['mods']:
@@ -511,7 +511,7 @@ def updateMods(instances: ParsedInstances, config: Config) -> None: # TODO Rewor
                         elif website == 'curseforge.com':
                             downloadCurseforgeMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs, config['CurseForge API Key'])
 
-def deleteDuplicateMods(instances: Instances) -> None: # TODO Rework this to work with class
+def deleteDuplicateMods(instances: list[Instance]) -> None: # TODO Rework this to work with class
     logger.info(f'DELETING OUTDATED MODS')
     
     def scanFolder(instance_dir: str) -> None:
