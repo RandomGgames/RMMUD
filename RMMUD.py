@@ -177,10 +177,10 @@ def copyToPathOrPaths(file_path: Path, destination_file_path_or_paths: Path | li
     
 def loadConfigFile(path: str = "RMMUDConfig.yaml") -> RMMUDConfiguration:
     try:
+        logger.info(f'Loading config...')
         config = readYAML(path)
     except Exception as e:
-        logger.error(f'Could not load config.')
-        logger.exception(e)
+        logger.error(f'An error occured while loading config due to {repr(e)}')
         raise e
     
     logger.debug(f'Verifying config variable types.')
