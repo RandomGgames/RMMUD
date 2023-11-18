@@ -299,7 +299,7 @@ def loadInstances(instances_dir: str) -> list[RMMUDInstance]: # TODO Rework this
             continue
     return enabled_instances
 
-#def parseInstances(instances: list[RMMUDInstance]) -> RMMUDInstance: # TODO This function is probably no longer required...
+def parseInstances(instances: list[RMMUDInstance]) -> RMMUDInstance: # TODO This function is probably no longer required...
 #    logger.debug('Parsing enabled instances')
 #    
 #    for instance_name, instance in instances.items():
@@ -349,6 +349,7 @@ def loadInstances(instances_dir: str) -> list[RMMUDInstance]: # TODO Rework this
 #                parsed_instances[mod_loader]['mods'][minecraft_version][mod_id][url_authority][mod_version]['directories'].append(instance_dir)
 #    
 #    return parsed_instances
+    pass
 
 def downloadModrinthMod(mod_id: str, mod_loader: str, minecraft_version: str, mod_version: str,
                         download_dir: str, instance_dirs: list[str]) -> None:
