@@ -20,11 +20,11 @@ __version__ = '.'.join(str(x) for x in __version_info__)
 # ^^^ My girlfriend wrote this for me, I am not removing it.
 
 class RMMUDConfiguration:
-    def __init__(self, check_for_updates: bool, downloads_folder: str, instances_folder: str, curseforge_api_key: str | None):
-        self.curseforge_api_key = curseforge_api_key
+    def __init__(self, check_for_updates: bool, downloads_folder: str = 'RMMUDDownloads', instances_folder: str = 'RMMUDInstances', curseforge_api_key: str | None = None):
         self.check_for_updates = check_for_updates
         self.downloads_folder = downloads_folder
         self.instances_folder = instances_folder
+        self.curseforge_api_key = curseforge_api_key
 
 class RMMUDInstance:
     def __init__(self, enabled: bool, loader: typing.Literal['Fabric', 'Forge'], directory: str | None, mods: dict | list, version: str):
