@@ -86,6 +86,31 @@ def checkIfZipIsCorrupted(path: str) -> bool:
         logger.error(f'An error occurred while checking if zip is corrupted due to {repr(e)}')
         raise e
 
+def compareTwoVersions(v1: str, v2: str) -> typing.Literal['higher', 'lower', 'same']:
+    try:
+        logger.debug(f'Comparing two versions together...')
+        v1_list = list(map(int, v1.split('.')))
+        v2_list = list(map(int, v2.split('.')))
+        max_elements = max(len(v1_list), len(v2_list))
+        
+        while len(v1_list) < max_elements:
+            v1_list.append(0)
+        while len(v2_list) < max_elements:
+            v2_list.append(0)
+        
+        for i in range(min(len(v1_list), len(v2_list))):
+            if v1_list[i] > v2_list[i]:
+                logging.debug('v1 is higher than v2.')
+                return 'higher'
+            elif v1_list[i] < v2_list[i]:
+                logging.debug(f'v1 is lower than v2.')
+                return 'lower'
+        logging.debug(f'v1 is the same as v2.')
+        return 'same'
+    except Exception as e:
+        logger.error(f'An error occured while comparing two versions together due to {repr(e)}')
+        raise e
+
 def getGithubLatestReleaseTag(url: typing.URL, include_prerelleases: bool = False) -> str:
     try:
         logger.debug('Getting latest github release version...')
@@ -101,32 +126,6 @@ def getGithubLatestReleaseTag(url: typing.URL, include_prerelleases: bool = Fals
 
 def checkForUpdate() -> bool | None:
     logger.info('Checking for an RMMUD update.')
-    
-    def compareTwoVersions(v1: str, v2: str) -> typing.Literal['higher', 'lower', 'same']:
-        try:
-            logger.debug(f'Comparing two versions together...')
-            v1_list = list(map(int, v1.split('.')))
-            v2_list = list(map(int, v2.split('.')))
-            max_elements = max(len(v1_list), len(v2_list))
-            
-            while len(v1_list) < max_elements:
-                v1_list.append(0)
-            while len(v2_list) < max_elements:
-                v2_list.append(0)
-            
-            for i in range(min(len(v1_list), len(v2_list))):
-                if v1_list[i] > v2_list[i]:
-                    logging.debug('v1 is higher than v2.')
-                    return 'higher'
-                elif v1_list[i] < v2_list[i]:
-                    logging.debug(f'v1 is lower than v2.')
-                    return 'lower'
-            logging.debug(f'v1 is the same as v2.')
-            return 'same'
-        except Exception as e:
-            logger.error(f'An error occured while comparing two versions together due to {repr(e)}')
-            raise e
-    
     current_version = __version__
     try:
         github_version = getGithubLatestReleaseTag()
