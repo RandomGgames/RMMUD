@@ -151,17 +151,14 @@ def checkForUpdate() -> bool | None:
     
     try:
         current_version = __version__
-        logging.debug(f'Getting github\'s version...')
-        github_version = getGithubLatestReleaseTag()
-        logging.debug(f'Got github\'s version.')
+        url = 'https://api.github.com/repos/RandomGgames/RMMUD/releases'
+        github_version = getGithubLatestReleaseTag(url)
     except Exception as e:
         logger.warning(f'An error occured while getting github\'s version due to {repr(e)}. Due to this error, checking for updates could not continue.')
         return None
     
     try:
-        logger.debug('Comparing two versions...')
         version_check = compareTwoVersions(github_version, __version__)
-        logger.debug(f'Compared two versions.')
     except Exception as e:
         logger.warning(f'An error occured while comparing two versions due to {repr(e)}. Due to this error, checking for updates could not continue.')
         return None
