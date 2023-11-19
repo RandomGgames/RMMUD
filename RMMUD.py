@@ -131,12 +131,12 @@ def compareTwoVersions(v1: str, v2: str) -> Literal['higher', 'lower', 'same']:
         
         for i in range(min(len(v1_list), len(v2_list))):
             if v1_list[i] > v2_list[i]:
-                logging.debug('v1 is higher than v2.')
+                logger.debug('v1 is higher than v2.')
                 return 'higher'
             elif v1_list[i] < v2_list[i]:
-                logging.debug(f'v1 is lower than v2.')
+                logger.debug(f'v1 is lower than v2.')
                 return 'lower'
-        logging.debug(f'v1 is the same as v2.')
+        logger.debug(f'v1 is the same as v2.')
         return 'same'
     except Exception as e:
         logger.error(f'An error occured while comparing two versions together due to {repr(e)}')
@@ -236,7 +236,7 @@ def verifyAttributeTypes(values: dict, types: dict[Union[type, tuple[type, ...]]
 
 def loadConfig(config_path: str = "RMMUDConfig.yaml") -> Configuration:
     try:
-        logger.debug(f'Loading config file...')
+        logger.info(f'LOADING CONFIG FILE...')
         read_data = readYAML(config_path)
         yaml_data = {}
         yaml_data['check_for_updates'] = read_data['Check for RMMUD Updates']
@@ -250,7 +250,7 @@ def loadConfig(config_path: str = "RMMUDConfig.yaml") -> Configuration:
             'curseforge_api_key': (str, type(None))
         }
         verifyAttributeTypes(yaml_data, attribute_types)
-        logger.info(f'Loaded config file.')
+        logger.info(f'LOADED CONFIG FILE.')
         return Configuration(**yaml_data)
     except Exception as e:
         logger.error(f'An error occured while loading config file due to {repr(e)}')
@@ -285,7 +285,7 @@ def loadInstances(instances_dir: str) -> list[Instance]: # TODO Rework this to w
     enabled_instances = []
     if not os.path.exists(instances_dir):
         try:
-            logging.debug(f'Creating folder "{instances_dir}"')
+            logger.debug(f'Creating folder "{instances_dir}"')
             os.makedirs(instances_dir)
             logger.debug(f'Created folder "{instances_dir}".')
         except Exception as e:
@@ -302,10 +302,10 @@ def loadInstances(instances_dir: str) -> list[Instance]: # TODO Rework this to w
                 logger.info(f'Loaded enabled instance "{instance_name}"')
             else:
                 logger.info(f'Ignoring disabled instance "{instance_name}"')
-        logger.info(f'DONE LOADING INSTANCES...')
+        logger.info(f'LOADED INSTANCES.')
         return enabled_instances
     except Exception as e:
-        logging.error(f'An error occured while loading instance files due to {repr(e)}')
+        logger.error(f'An error occured while loading instance files due to {repr(e)}')
         raise e
 
 def parseInstances(instances: list[Instance]) -> Instance: # TODO This function is probably no longer required...
@@ -568,7 +568,7 @@ def main():
     
     config = loadConfig()
     
-    print(config)
+    #logger.debug(f'Config: {config}')
     
     if config.check_for_updates: checkForUpdate()
     
@@ -583,7 +583,7 @@ def main():
     #    updateMods(parsed_instances, config)
     #    deleteDuplicateMods(instances)
     
-    logger.info('Done.')
+    logger.info('DONE.')
 
 if __name__ == '__main__':
     # Clear latest.log if it exists
