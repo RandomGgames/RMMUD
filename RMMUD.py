@@ -351,7 +351,7 @@ def downloadModrinthMod(mod_id: str, mod_loader: str, minecraft_version: str, mo
     except Exception as e:
         logger.warning(f'Could not update "{mod_id}": {e}')
         return
-    response = sorted(response, key=lambda x: datetime.fromisoformat(x['date_published'][:-1]), reverse = True)
+    response = sorted(response, key = lambda x: datetime.fromisoformat(x['date_published'][:-1]), reverse = True)
     if mod_version == 'latest_version':
         if len(response) > 0:
             desired_mod_version = response[0]
