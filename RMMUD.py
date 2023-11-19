@@ -28,7 +28,6 @@ class Configuration:
             self.curseforge_api_key = str(curseforge_api_key)
         else:
             self.curseforge_api_key = None
-    
     def __str__(self):
         return f"Configuration: check_for_updates={self.check_for_updates}, downloads_folder='{self.downloads_folder}', instances_folder='{self.instances_folder}', curseforge_api_key='{self.curseforge_api_key}'"
 
