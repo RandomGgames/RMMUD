@@ -22,8 +22,8 @@ __version__ = '.'.join(str(x) for x in __version_info__)
 class Configuration:
     def __init__(self, check_for_updates: bool, downloads_folder: str = 'RMMUDDownloads', instances_folder: str = 'RMMUDInstances', curseforge_api_key: str | None = None):
         self.check_for_updates = bool(check_for_updates)
-        self.downloads_folder = str(downloads_folder)
-        self.instances_folder = str(instances_folder)
+        self.downloads_folder = Path(downloads_folder)
+        self.instances_folder = Path(instances_folder)
         if curseforge_api_key is not None and len(curseforge_api_key) == 60 and curseforge_api_key.startswith('$2a$10$'):
             self.curseforge_api_key = str(curseforge_api_key)
         else:
@@ -35,10 +35,10 @@ class Configuration:
 class Instance:
     def __init__(self, enabled: bool, version: str, loader: typing.Literal['Fabric', 'Forge'], directory: Path = None, mods: list = []):
         self.enabled = bool(enabled)
-        self.loader = loader
-        self.directory = Path(directory) if directory is not None else None
-        self.mods = mods
+        self.loader = str(loader)
         self.version = str(version)
+        self.directory = Path(directory) if directory is not None else None
+        self.mods = list(mods)
 
 def extractNestedStrings(iterable: str | list | dict | tuple) -> list[str]:
     logger.debug('Extracting nested strings...')
