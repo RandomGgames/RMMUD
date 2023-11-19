@@ -41,6 +41,21 @@ class Instance:
     def __str__(self):
         return f"Instance: enabled={self.enabled}, loader='{self.loader}', version='{self.version}', directory='{self.directory}', mods='{self.mods}'"
 
+class ModsSet:
+    def __init__(self, instances: list[Instance]):
+        self.instances = instances
+        self.dataset = self.generate_dataset()
+    def generate_dataset(self) -> Dict[str, Dict[str, Dict[str, List[Path]]]]:
+        mod_set = {}
+        for instance in self.instances:
+            for mod in instance.mods:
+                version, loader, directory = instance.version, instance.loader, instance.directory
+                mod_set.setdefault(version, {}).setdefault(loader, {}).setdefault(mod, [])
+                if directory not in mod_set[version][loader][mod]: mod_set[version][loader][mod].append(directory)
+        return mod_set
+    def __str__(self):
+        return str(self.dataset)
+
 def extractNestedStrings(iterable: str | list | dict | tuple) -> list[str]:
     logger.debug('Extracting nested strings...')
     def extract(iterable: str | list | dict | tuple) -> list[str]:
