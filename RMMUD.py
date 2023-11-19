@@ -48,7 +48,7 @@ def extractNestedStrings(iterable: str | list | dict | tuple) -> list[str]:
             case dict():
                 for value in iterable.values():
                     strings += extract(value)
-            case (list(), tuple()):
+            case list() | tuple():
                 for item in iterable:
                     strings += extract(item)
             case str():
