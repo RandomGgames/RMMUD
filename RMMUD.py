@@ -116,11 +116,11 @@ def compareTwoVersions(v1: str, v2: str) -> typing.Literal['higher', 'lower', 's
         logger.error(f'An error occured while comparing two versions together due to {repr(e)}')
         raise e
 
-def getGithubLatestReleaseTag(url: str, include_prerelleases: bool = False) -> str:
+def getGithubLatestReleaseTag(url: str, include_prereleases: bool = False) -> str:
     try:
         logger.debug('Getting latest github release version...')
         versions: list[dict] = requests.get(url).json()
-        if not include_prerelleases:
+        if not include_prereleases:
             versions = [version for version in versions if not version.get('prerelease')]
         latest_version = versions[0].get('tag_name', None)
         logger.debug('Got latest github release version.')
