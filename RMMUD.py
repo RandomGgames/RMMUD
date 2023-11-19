@@ -199,7 +199,6 @@ def copyToPathOrPaths(file_path: Path, destination_file_path_or_paths: Path | li
             logger.warning(f'Could not copy file to path(s) due to invalid destination input "{destination_file_path_or_paths}"')
             raise ValueError(destination_file_path_or_paths)
 
-def loadConfigFile(config_path: str = "RMMUDConfig.yaml") -> Configuration: # TODO Rework this to work with class
 def verifyAttributeTypes(values: dict, types: dict[typing.Union[type, tuple[type, ...]]]) -> bool:
     logger.debug('Verifying attribute types...')
     for key, val in values.items():
@@ -209,38 +208,27 @@ def verifyAttributeTypes(values: dict, types: dict[typing.Union[type, tuple[type
     logger.debug('Verified attribute types.')
     return True
 
+def loadConfig(config_path: str = "RMMUDConfig.yaml") -> Configuration:
     try:
-        logger.info(f'Loading config...')
-        config = readYAML(path)
+        logger.debug(f'Loading config file...')
+        read_data = readYAML(config_path)
+        yaml_data = {}
+        yaml_data['check_for_updates'] = read_data['Check for RMMUD Updates']
+        yaml_data['downloads_folder'] = read_data['Downloads Folder']
+        yaml_data['instances_folder'] = read_data['Instances Folder']
+        yaml_data['curseforge_api_key'] = read_data['CurseForge API Key']
+        attribute_types = {
+            'check_for_updates': bool,
+            'downloads_folder': str,
+            'instances_folder': str,
+            'curseforge_api_key': (str, type(None))
+        }
+        verifyAttributeTypes(yaml_data, attribute_types)
+        logger.debug(f'Loaded config file.')
+        return Configuration(**yaml_data)
     except Exception as e:
-        logger.error(f'An error occured while loading config due to {repr(e)}')
+        logger.error(f'An error occured while loading config file due to {repr(e)}')
         raise e
-    
-    logger.debug(f'Verifying config variable types.')
-    
-    config['CurseForge API Key'] = config.get('CurseForge API Key', None)
-    
-    if isinstance(config['CurseForge API Key'], str) and len(config['CurseForge API Key']) != 60:
-        config['CurseForge API Key'] = None
-    if config['CurseForge API Key'] is not None and not isinstance(config['CurseForge API Key'], str):
-        raise TypeError("Curseforge API key should be a string or None.")
-    
-    defaults = {
-        "Check for RMMUD Updates": True,
-        "Downloads Folder": "RMMUDDownloads",
-        "Instances Folder": "RMMUDInstances",
-        "CurseForge API Key": None
-    }
-    
-    for key, value in defaults.items():
-        config[key] = config.get(key, value)
-        if not isinstance(config[key], type(value)):
-            raise TypeError(f"{key} should be a {type(value).__name__}.")
-    
-    logger.debug(f'Done verifying config variable types.')
-    
-    logger.debug(f'Done loading config.')
-    return config
 
 def loadInstanceFile(path: str) -> typing.Type[Instance]: # TODO Rework this to work with class
     try:
