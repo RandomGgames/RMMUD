@@ -24,7 +24,10 @@ class Configuration:
         self.check_for_updates = bool(check_for_updates)
         self.downloads_folder = str(downloads_folder)
         self.instances_folder = str(instances_folder)
-        self.curseforge_api_key = str(curseforge_api_key) if curseforge_api_key is not None else None
+        if curseforge_api_key is not None and len(curseforge_api_key) == 60 and curseforge_api_key.startswith('$2a$10$'):
+            self.curseforge_api_key = str(curseforge_api_key)
+        else:
+            self.curseforge_api_key = None
     
     def __str__(self):
         return f"Configuration: check_for_updates={self.check_for_updates}, downloads_folder='{self.downloads_folder}', instances_folder='{self.instances_folder}', curseforge_api_key='{self.curseforge_api_key}'"
