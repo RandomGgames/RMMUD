@@ -557,11 +557,14 @@ def deleteDuplicateMods(instances: list[Instance]) -> None: # TODO Rework this t
 def main():
     logger.debug(f'Running main body of script')
     
-    config = loadConfigFile()
-    try:
-        if config['Check for RMMUD Updates']: checkForUpdate()
-    except Exception as e:
-        logger.warning(f'Could not check for updates due to {repr(e)}... Update checks will have to be done manually due to the current or latest version tag.')
+    config = loadConfig()
+    
+    print(config)
+    
+    #try:
+    #    if config['Check for RMMUD Updates']: checkForUpdate()
+    #except Exception as e:
+    #    logger.warning(f'Could not check for updates due to {repr(e)}... Update checks will have to be done manually due to the current or latest version tag.')
     
     #instances = loadInstances(config['Instances Folder'])
     #parsed_instances = parseInstances(instances)
@@ -581,7 +584,7 @@ if __name__ == '__main__':
     
     # Set up logger
     logging.basicConfig(
-        level = logging.INFO,
+        level = logging.DEBUG,
         format = '%(asctime)s.%(msecs)03d %(levelname)s: %(message)s',
         datefmt = '%Y/%m/%d %H:%M:%S',
         encoding = 'utf-8',
