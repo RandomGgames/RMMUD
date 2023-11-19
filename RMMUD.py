@@ -548,6 +548,7 @@ def main():
     if config.check_for_updates: checkForUpdate()
     
     instances = loadInstances(config.instances_folder)
+    print(instances)
     #parsed_instances = parseInstances(instances)
     
     #if len(parsed_instances) == 0:
