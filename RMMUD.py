@@ -21,19 +21,21 @@ __version__ = '.'.join(str(x) for x in __version_info__)
 
 class Configuration:
     def __init__(self, check_for_updates: bool, downloads_folder: str = 'RMMUDDownloads', instances_folder: str = 'RMMUDInstances', curseforge_api_key: str | None = None):
-        self.check_for_updates = check_for_updates
-        self.downloads_folder = downloads_folder
-        self.instances_folder = instances_folder
-        self.curseforge_api_key = curseforge_api_key
+        self.check_for_updates = bool(check_for_updates)
+        self.downloads_folder = str(downloads_folder)
+        self.instances_folder = str(instances_folder)
+        self.curseforge_api_key = str(curseforge_api_key) if curseforge_api_key is not None else None
+    
+    def __str__(self):
+        return f"Configuration: check_for_updates={self.check_for_updates}, downloads_folder='{self.downloads_folder}', instances_folder='{self.instances_folder}', curseforge_api_key='{self.curseforge_api_key}'"
 
 class Instance:
-    def __init__(self, enabled: bool, loader: typing.Literal['Fabric', 'Forge'], directory: str | None, mods: dict | list, version: str):
-        self.enabled = enabled
+    def __init__(self, enabled: bool, version: str, loader: typing.Literal['Fabric', 'Forge'], directory: Path = None, mods: list = []):
+        self.enabled = bool(enabled)
         self.loader = loader
-        self.directory = directory
+        self.directory = Path(directory) if directory is not None else None
         self.mods = mods
-        self.version = version
-        self.parsed_mods = extractNestedStrings(mods)
+        self.version = str(version)
 
 def extractNestedStrings(iterable: str | list | dict | tuple) -> list[str]:
     logger.debug('Extracting nested strings...')
