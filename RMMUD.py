@@ -566,7 +566,7 @@ def main():
     except Exception as e:
         logger.warning(f'Could not check for updates due to {repr(e)}... Update checks will have to be done manually due to the current or latest version tag.')
     
-    instances = loadInstances(config['Instances Folder'])
+    #instances = loadInstances(config['Instances Folder'])
     #parsed_instances = parseInstances(instances)
     
     #if len(parsed_instances) == 0:
