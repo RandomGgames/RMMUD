@@ -1,0 +1,11 @@
+2023/11/19 02:52:03.396 INFO: LOADING CONFIG FILE...
+2023/11/19 02:52:03.397 INFO: LOADED CONFIG FILE.
+2023/11/19 02:52:03.397 INFO: Checking for an RMMUD update...
+2023/11/19 02:52:03.491 INFO: You are currently using a pre-release or work-in-progress version! If you encounter any bugs or issues, please report any issues here: https://github.com/RandomGgames/RMMUD/issues. Thanks!
+2023/11/19 02:52:03.491 INFO: LOADING INSTANCES...
+2023/11/19 02:52:03.493 INFO: Loaded enabled instance "Example 1"
+2023/11/19 02:52:03.494 INFO: Ignoring disabled instance "Example 2 (Organized)"
+2023/11/19 02:52:03.497 INFO: Loaded enabled instance "RandomMC"
+2023/11/19 02:52:03.503 INFO: Loaded enabled instance "Vanilla+"
+2023/11/19 02:52:03.504 INFO: LOADED INSTANCES.
+2023/11/19 02:52:03.504 INFO: Done.

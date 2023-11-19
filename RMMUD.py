@@ -54,8 +54,14 @@ class ModsSet:
                 if directory not in mod_set[version][loader][mod]: mod_set[version][loader][mod].append(directory)
         return mod_set
     def __str__(self):
-        return str(self.dataset)
-
+        string_dirs_dataset = self.dataset
+        for version in string_dirs_dataset:
+            for loader in string_dirs_dataset[version]:
+                for mod in string_dirs_dataset[version][loader]:
+                    for i, dir in enumerate(string_dirs_dataset[version][loader][mod]):
+                        string_dirs_dataset[version][loader][mod][i] = str(dir)
+        return str(string_dirs_dataset)
+    
 def extractNestedStrings(iterable: str | list | dict | tuple) -> list[str]:
     logger.debug('Extracting nested strings...')
     print(f'{iterable = }')
