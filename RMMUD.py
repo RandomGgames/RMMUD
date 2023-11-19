@@ -337,8 +337,7 @@ def parseInstances(instances: list[Instance]) -> Instance: # TODO This function 
 #    return parsed_instances
     pass
 
-def downloadModrinthMod(mod_id: str, mod_loader: str, minecraft_version: str, mod_version: str,
-                        download_dir: str, instance_dirs: list[str]) -> None:
+def downloadModrinthMod(mod_id: str, mod_loader: str, minecraft_version: str, mod_version: str, download_dir: str, instance_dirs: list[str]) -> None:
     logger.info(f'Updating {mod_id} for {mod_loader} {minecraft_version}')
     
     logger.debug(f'Getting files from Modrinth')
