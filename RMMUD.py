@@ -58,6 +58,7 @@ class ModsSet:
 
 def extractNestedStrings(iterable: str | list | dict | tuple) -> list[str]:
     logger.debug('Extracting nested strings...')
+    print(f'{iterable = }')
     def extract(iterable: str | list | dict | tuple) -> list[str]:
         strings: list[str] = []
         match iterable:
@@ -71,7 +72,10 @@ def extractNestedStrings(iterable: str | list | dict | tuple) -> list[str]:
                 if iterable not in strings:
                     strings.append(iterable)
             case _:
-                logger.warning(f'An invalid variable "{iterable}" of type "{type(iterable)}" was ignored.')
+                if isinstance(iterable, type(None)):
+                    pass
+                else:
+                    logger.warning(f'An invalid variable "{iterable}" of type "{type(iterable)}" was ignored.')
         return strings
     try:
         extracted_strings = extract(iterable)
