@@ -5,12 +5,12 @@ import os
 import requests
 import shutil
 import sys
-import typing
 import webbrowser
 import yaml
 import zipfile
 from datetime import datetime
 from pathlib import Path
+from typing import Literal, Union, List, Dict
 from urllib.parse import urlparse
 
 __version_info__ = (3, 7, 1)
@@ -32,7 +32,7 @@ class Configuration:
         return f"Configuration: check_for_updates={self.check_for_updates}, downloads_folder='{self.downloads_folder}', instances_folder='{self.instances_folder}', curseforge_api_key='{self.curseforge_api_key}'"
 
 class Instance:
-    def __init__(self, enabled: bool, version: str, loader: typing.Literal['Fabric', 'Forge'], directory: Path = None, mods: list = []):
+    def __init__(self, enabled: bool, version: str, loader: Literal['Fabric', 'Forge'], directory: Path = None, mods: list = []):
         self.enabled = bool(enabled)
         self.loader = str(loader)
         self.version = str(version)
@@ -92,7 +92,7 @@ def checkIfZipIsCorrupted(path: str) -> bool:
         logger.error(f'An error occurred while checking if zip is corrupted due to {repr(e)}')
         raise e
 
-def compareTwoVersions(v1: str, v2: str) -> typing.Literal['higher', 'lower', 'same']:
+def compareTwoVersions(v1: str, v2: str) -> Literal['higher', 'lower', 'same']:
     try:
         logger.debug(f'Comparing two versions together...')
         v1_list = list(map(int, v1.split('.')))
@@ -200,7 +200,7 @@ def copyToPathOrPaths(file_path: Path, destination_file_path_or_paths: Path | li
             logger.warning(f'Could not copy file to path(s) due to invalid destination input "{destination_file_path_or_paths}"')
             raise ValueError(destination_file_path_or_paths)
 
-def verifyAttributeTypes(values: dict, types: dict[typing.Union[type, tuple[type, ...]]]) -> bool:
+def verifyAttributeTypes(values: dict, types: dict[Union[type, tuple[type, ...]]]) -> bool:
     logger.debug('Verifying attribute types...')
     for key, val in values.items():
         expected_type = types[key]
