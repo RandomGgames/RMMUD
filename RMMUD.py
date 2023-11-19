@@ -224,7 +224,7 @@ def loadConfig(config_path: str = "RMMUDConfig.yaml") -> Configuration:
             'curseforge_api_key': (str, type(None))
         }
         verifyAttributeTypes(yaml_data, attribute_types)
-        logger.debug(f'Loaded config file.')
+        logger.info(f'Loaded config file.')
         return Configuration(**yaml_data)
     except Exception as e:
         logger.error(f'An error occured while loading config file due to {repr(e)}')
