@@ -175,7 +175,7 @@ def checkForUpdate() -> bool | None:
             except:
                 return None
         case 'lower':
-            logger.info(f'You are on what seems like a work in progress version, as it is higher than the latest release. Please report any bugs onto the github page at https://github.com/RandomGgames/RMMUD')
+            logger.info(f'You are currently using a pre-release or work-in-progress version! If you encounter any bugs or issues, please report any issues here: https://github.com/RandomGgames/RMMUD/issues. Thanks!')
             return False
         case 'same':
             logger.info(f'You are already on the latest version.')
@@ -564,10 +564,8 @@ def main():
     
     print(config)
     
-    #try:
-    #    if config['Check for RMMUD Updates']: checkForUpdate()
-    #except Exception as e:
-    #    logger.warning(f'Could not check for updates due to {repr(e)}... Update checks will have to be done manually due to the current or latest version tag.')
+    if config.check_for_updates:
+        checkForUpdate()
     
     #instances = loadInstances(config['Instances Folder'])
     #parsed_instances = parseInstances(instances)
