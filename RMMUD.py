@@ -132,7 +132,7 @@ def getGithubLatestReleaseTag(url: str, include_prereleases: bool = False) -> st
 def promptToOpenURL(url_name: str, prompt_message: str, url: str) -> None | bool:
     try:
         logger.debug(f'Prompting to open {url_name}...')
-        open_update = input(f'{prompt_message} Y/N').lower()
+        open_update = input(f'{prompt_message} Y/N: ').lower()
         if open_update in ('y'):
             logger.debug('Prompt approved.')
             logger.debug(f'Opening {url_name}...')
