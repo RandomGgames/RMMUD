@@ -200,6 +200,15 @@ def copyToPathOrPaths(file_path: Path, destination_file_path_or_paths: Path | li
             raise ValueError(destination_file_path_or_paths)
 
 def loadConfigFile(config_path: str = "RMMUDConfig.yaml") -> Configuration: # TODO Rework this to work with class
+def verifyAttributeTypes(values: dict, types: dict[typing.Union[type, tuple[type, ...]]]) -> bool:
+    logger.debug('Verifying attribute types...')
+    for key, val in values.items():
+        expected_type = types[key]
+        if not isinstance(val, expected_type):
+            raise TypeError(f'Attribute "{key}" should be of type{"s" if isinstance(expected_type, tuple) else ""} "{expected_type}" but got "{type(val)}"')
+    logger.debug('Verified attribute types.')
+    return True
+
     try:
         logger.info(f'Loading config...')
         config = readYAML(path)
