@@ -230,42 +230,29 @@ def loadConfig(config_path: str = "RMMUDConfig.yaml") -> Configuration:
         logger.error(f'An error occured while loading config file due to {repr(e)}')
         raise e
 
-def loadInstanceFile(path: str) -> typing.Type[Instance]: # TODO Rework this to work with class
+def loadInstanceFile(path: str) -> Instance | None: # TODO Rework this to work with class
     try:
-        logger.debug(f'Reading instance file "{path}".')
-        data = readYAML(path)
+        logger.debug(f'Loading instance file...')
+        read_data = readYAML(path)
+        yaml_data = {}
+        yaml_data['enabled'] = read_data['Enabled']
+        yaml_data['loader'] = read_data['Loader']
+        yaml_data['version'] = read_data['Version']
+        yaml_data['directory'] = read_data['Directory']
+        yaml_data['mods'] = extractNestedStrings(read_data['Mods'])
+        attribute_types = {
+            "enabled": bool,
+            "loader": str,
+            "version": str,
+            "directory": str,
+            "mods": list,
+        }
+        verifyAttributeTypes(yaml_data, attribute_types)
+        logger.debug(f'Loaded instance file.')
+        return Instance(**yaml_data)
     except Exception as e:
-        logger.error(f'Could not load config.')
-        logger.exception(e)
+        logger.error(f'An error occured while loading instance file due to {repr(e)}')
         raise e
-    
-    logger.debug(f'Verifying instance variable types.')
-    
-    defaults = {
-        "Enabled": True,
-        "Loader": "",
-        "Directory": ["", None],
-        "Mods": [None, "", [...], {...: ...}],
-        "Version": ""
-    }
-    
-    for key, value in defaults.items():
-        if not isinstance(value, list):
-            data[key] = data.get(key, value)
-            if not isinstance(data[key], type(value)):
-                raise TypeError(f"The {key} option in the instance file {path} should be a {type(value).__name__}.")
-        else:
-            data[key] = data.get(key, value[1])
-            if not any(isinstance(data[key], type(val)) for val in value):
-                raise TypeError(f"The {key} option in the instance file {path} " +
-                                f"should be a {' / '.join(str(type(val).__name__) for val in value)}")
-    
-    logger.debug(f'Done verifying instance variable types.')
-    
-    data["Loader"] = data["Loader"].lower()
-    
-    logger.debug(f'Done reading instance file')
-    return data
 
 def loadInstances(instances_dir: str) -> list[Instance]: # TODO Rework this to work with class
     logger.info(f'LOADING INSTANCES')
