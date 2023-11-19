@@ -545,8 +545,7 @@ def main():
     
     print(config)
     
-    if config.check_for_updates:
-        checkForUpdate()
+    if config.check_for_updates: checkForUpdate()
     
     instances = loadInstances(config.instances_folder)
     #parsed_instances = parseInstances(instances)
