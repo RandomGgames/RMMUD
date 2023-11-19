@@ -70,10 +70,10 @@ def readYAML(path: str) -> dict:
         logger.debug(f'Reading the YAML file located at "{path}"...')
         with open(path, 'r') as f:
             data = yaml.load(f, yaml.SafeLoader)
-            logger.debug(f'YAML file read completed.')
+            logger.debug(f'Read the YAML file located at "{path}".')
             return data
     except Exception as e:
-        logger.error(f'An error occured while reading the YAML file due to {repr(e)}')
+        logger.error(f'An error occured while reading the YAML file located at "{path}" due to {repr(e)}')
         raise e
 
 def checkIfZipIsCorrupted(path: str) -> bool:
