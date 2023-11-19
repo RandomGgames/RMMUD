@@ -38,6 +38,8 @@ class Instance:
         self.version = str(version)
         self.directory = Path(directory) if directory is not None else None
         self.mods = list(mods)
+    def __str__(self):
+        return f"Instance: enabled={self.enabled}, loader='{self.loader}', version='{self.version}', directory='{self.directory}', mods='{self.mods}'"
 
 def extractNestedStrings(iterable: str | list | dict | tuple) -> list[str]:
     logger.debug('Extracting nested strings...')
