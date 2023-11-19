@@ -573,8 +573,11 @@ def main():
     if config.check_for_updates: checkForUpdate()
     
     instances = loadInstances(config.instances_folder)
-    for instance in instances:
-        print(instance)
+    #for instance in instances: logger.debug(f'Instance: {instance}')
+    
+    mods_set = ModsSet(instances)
+    #logger.debug(f'ModsSet: {str(mods_set)}')
+    
     #parsed_instances = parseInstances(instances)
     
     #if len(parsed_instances) == 0:
