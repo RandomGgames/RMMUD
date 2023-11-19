@@ -255,35 +255,32 @@ def loadInstanceFile(path: str) -> Instance | None: # TODO Rework this to work w
         raise e
 
 def loadInstances(instances_dir: str) -> list[Instance]: # TODO Rework this to work with class
-    logger.info(f'LOADING INSTANCES')
-    
+    logger.info(f'LOADING INSTANCES...')
+    enabled_instances = []
     if not os.path.exists(instances_dir):
         try:
+            logging.debug(f'Creating folder "{instances_dir}"')
             os.makedirs(instances_dir)
-            logger.debug(f'Created folder "{instances_dir}"')
+            logger.debug(f'Created folder "{instances_dir}".')
         except Exception as e:
-            logger.error(f'Could not create "{instances_dir}".')
-            logger.exception(e)
+            logger.error(f'An error occured while creating folder "{instances_dir}" due to {repr(e)}')
             raise e
-    
-    enabled_instances: list[Instance] = {}
-    for instance_file in [f for f in os.listdir(instances_dir) if f.endswith('.yaml')]:
-        instance_path = os.path.join(instances_dir, instance_file)
-        instance_name = os.path.splitext(instance_file)[0]
-        try:
+    try:
+        for instance_file in [file for file in os.listdir(instances_dir) if file.endswith('.yaml')]:
+            instance_path = os.path.join(instances_dir, instance_file)
+            instance_name = os.path.splitext(instance_file)[0]
             instance = loadInstanceFile(instance_path)
-            if not instance['Enabled']:
-                logger.info(f'Ignoring disabled instance "{instance_file}"')
-                continue
+            
+            if instance.enabled:
+                enabled_instances.append(instance)
+                logger.info(f'Loaded enabled instance "{instance_name}"')
             else:
-                logger.info(f'Loading enabled instance "{instance_file}"')
-                instance.pop('Enabled')
-                enabled_instances[instance_name] = instance
-        except Exception as e:
-            logger.warning(f'Could not load instance "{instance_name}". Ignoring this file.')
-            logger.exception(e)
-            continue
-    return enabled_instances
+                logger.info(f'Ignoring disabled instance "{instance_name}"')
+        logger.info(f'DONE LOADING INSTANCES...')
+        return enabled_instances
+    except Exception as e:
+        logging.error(f'An error occured while loading instance files due to {repr(e)}')
+        raise e
 
 def parseInstances(instances: list[Instance]) -> Instance: # TODO This function is probably no longer required...
 #    logger.debug('Parsing enabled instances')
@@ -550,7 +547,7 @@ def main():
     if config.check_for_updates:
         checkForUpdate()
     
-    #instances = loadInstances(config['Instances Folder'])
+    instances = loadInstances(config.instances_folder)
     #parsed_instances = parseInstances(instances)
     
     #if len(parsed_instances) == 0:
