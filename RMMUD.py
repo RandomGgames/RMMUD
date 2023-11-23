@@ -280,17 +280,17 @@ def loadInstanceFile(path: str) -> Instance | None:
         logger.error(f'An error occured while loading instance file due to {repr(e)}')
         raise e
 
-def loadInstances(instances_dir: str) -> list[Instance]: # TODO Rework this to work with class
-    logger.info(f'LOADING INSTANCES...')
-    enabled_instances = []
-    if not os.path.exists(instances_dir):
-        try:
+def loadInstances(instances_dir: str) -> list[Instance]:
+    try:
+        logger.info(f'LOADING INSTANCES...')
+        enabled_instances = []
+        if not os.path.exists(instances_dir):
             logger.debug(f'Creating folder "{instances_dir}"')
             os.makedirs(instances_dir)
             logger.debug(f'Created folder "{instances_dir}".')
-        except Exception as e:
-            logger.error(f'An error occured while creating folder "{instances_dir}" due to {repr(e)}')
-            raise e
+    except Exception as e:
+        logger.error(f'An error occured while creating folder "{instances_dir}" due to {repr(e)}')
+        raise e
     try:
         for instance_file in [file for file in os.listdir(instances_dir) if file.endswith('.yaml')]:
             instance_path = os.path.join(instances_dir, instance_file)
