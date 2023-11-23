@@ -256,7 +256,7 @@ def loadConfig(config_path: str = "RMMUDConfig.yaml") -> Configuration:
         logger.error(f'An error occured while loading config file due to {repr(e)}')
         raise e
 
-def loadInstanceFile(path: str) -> Instance | None: # TODO Rework this to work with class
+def loadInstanceFile(path: str) -> Instance | None:
     try:
         logger.debug(f'Loading instance file...')
         read_data = readYAML(path)
