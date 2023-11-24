@@ -523,7 +523,7 @@ def main():
     #for instance in instances: logger.debug(f'Instance: {instance}')
     
     mods_set = ModsSet(instances)
-    #logger.debug(f'ModsSet: {str(mods_set)}')
+    logger.debug(f'ModsSet: {str(mods_set)}')
     
     #if len(parsed_instances) == 0:
     #    logger.info(f'No instances exist!')
