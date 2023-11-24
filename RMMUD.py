@@ -33,7 +33,8 @@ class Configuration:
         return f"Configuration: check_for_updates={self.check_for_updates}, downloads_folder='{self.downloads_folder}', instances_folder='{self.instances_folder}', curseforge_api_key='{self.curseforge_api_key}'"
 
 class Instance:
-    def __init__(self, enabled: bool, version: str, loader: Literal['Fabric', 'Forge'], directory: Path = None, mods: list = []):
+    def __init__(self, name: str, enabled: bool, version: str, loader: Literal['Fabric', 'Forge'], directory: Path = None, mods: list = []):
+        self.name = str(name)
         self.enabled = bool(enabled)
         self.loader = str(loader)
         self.version = str(version)
@@ -41,7 +42,8 @@ class Instance:
         self.mods = list(mods)
     
     def __str__(self):
-        return f"Instance: enabled={self.enabled}, loader='{self.loader}', version='{self.version}', directory='{self.directory}', mods='{self.mods}'"
+        attributes = ', '.join([f"{attribute}={getattr(self, attribute)}" for attribute in vars(self)])
+        return f"Instance({attributes})"
 
 class ModsSet:
     def __init__(self, instances: list[Instance]):
@@ -258,26 +260,28 @@ def loadConfig(config_path: str = "RMMUDConfig.yaml") -> Configuration:
         logger.error(f'An error occured while loading config file due to {repr(e)}')
         raise e
 
-def loadInstanceFile(path: str) -> Instance | None:
+def loadInstanceFile(path: Path) -> Instance | None:
     try:
         logger.debug(f'Loading instance file...')
         read_data = readYAML(path)
-        yaml_data = {}
-        yaml_data['enabled'] = read_data['Enabled']
-        yaml_data['loader'] = read_data['Loader']
-        yaml_data['version'] = read_data['Version']
-        yaml_data['directory'] = read_data['Directory']
-        yaml_data['mods'] = extractNestedStrings(read_data['Mods'])
+        data = {}
+        data['name'] = os.path.splitext(os.path.basename(path))[0]
+        data['enabled'] = read_data['Enabled']
+        data['loader'] = read_data['Loader']
+        data['version'] = read_data['Version']
+        data['directory'] = read_data['Directory']
+        data['mods'] = extractNestedStrings(read_data['Mods'])
         attribute_types = {
+            "name": str,
             "enabled": bool,
             "loader": str,
             "version": str,
             "directory": str,
             "mods": list,
         }
-        verifyAttributeTypes(yaml_data, attribute_types)
+        verifyAttributeTypes(data, attribute_types)
         logger.debug(f'Loaded instance file.')
-        return Instance(**yaml_data)
+        return Instance(**data)
     except Exception as e:
         logger.error(f'An error occured while loading instance file due to {repr(e)}')
         raise e
@@ -446,28 +450,34 @@ def downloadCurseforgeMod(mod_id: str, mod_loader: str, minecraft_version: str, 
                     continue
 
 def updateMods(instances: list[Instance], config: Configuration) -> None: # TODO Rework this to work with class
-    logger.debug(f'Creating folders to download mods into')
-    for mod_loader in instances:
-        for minecraft_version in instances[mod_loader]['mods']:
-            dir = ""
-            try:
-                dir = os.path.join(config['Downloads Folder'], mod_loader, minecraft_version)
-                os.makedirs(dir, exist_ok = True)
-            except Exception as e:
-                logger.warning(f'Could not create download folder {dir}: {e}')
-                raise e
+    try:
+        for instance in instances:
+            print(instance)
+    except Exception as e:
+        raise e
     
-    logger.info(f'UPDATING MODS')
-    for mod_loader in instances:
-        for minecraft_version in instances[mod_loader]['mods']:
-            for mod_id in instances[mod_loader]['mods'][minecraft_version]:
-                for website in instances[mod_loader]['mods'][minecraft_version][mod_id]:
-                    for mod_version in instances[mod_loader]['mods'][minecraft_version][mod_id][website]:
-                        instance_dirs = instances[mod_loader]['mods'][minecraft_version][mod_id][website][mod_version]['directories']
-                        if website == 'modrinth.com':
-                            downloadModrinthMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs)
-                        elif website == 'curseforge.com':
-                            downloadCurseforgeMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs, config['CurseForge API Key'])
+    #logger.debug(f'Creating folders to download mods into')
+    #for mod_loader in instances:
+    #    for minecraft_version in instances[mod_loader]['mods']:
+    #        dir = ""
+    #        try:
+    #            dir = os.path.join(config['Downloads Folder'], mod_loader, minecraft_version)
+    #            os.makedirs(dir, exist_ok = True)
+    #        except Exception as e:
+    #            logger.warning(f'Could not create download folder {dir}: {e}')
+    #            raise e
+    #
+    #logger.info(f'UPDATING MODS')
+    #for mod_loader in instances:
+    #    for minecraft_version in instances[mod_loader]['mods']:
+    #        for mod_id in instances[mod_loader]['mods'][minecraft_version]:
+    #            for website in instances[mod_loader]['mods'][minecraft_version][mod_id]:
+    #                for mod_version in instances[mod_loader]['mods'][minecraft_version][mod_id][website]:
+    #                    instance_dirs = instances[mod_loader]['mods'][minecraft_version][mod_id][website][mod_version]['directories']
+    #                    if website == 'modrinth.com':
+    #                        downloadModrinthMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs)
+    #                    elif website == 'curseforge.com':
+    #                        downloadCurseforgeMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs, config['CurseForge API Key'])
 
 def deleteDuplicateMods(instances: list[Instance]) -> None: # TODO Rework this to work with class
     logger.info(f'DELETING OUTDATED MODS')
@@ -525,14 +535,14 @@ def main():
     instances = loadInstances(config.instances_folder)
     #for instance in instances: logger.debug(f'Instance: {instance}')
     
-    mods_set = ModsSet(instances)
-    logger.debug(f'ModsSet: {str(mods_set)}')
+    #mods_set = ModsSet(instances)
+    #logger.debug(f'ModsSet: {str(mods_set)}')
     
-    if len(mods_set) == 0:
+    if len(instances) == 0:
         logger.info(f'No instances exist!')
     else:
-        updateMods(mods_set, config)
-        deleteDuplicateMods(instances)
+        updateMods(instances, config)
+        #deleteDuplicateMods(instances)
     
     logger.info('DONE.')
 
