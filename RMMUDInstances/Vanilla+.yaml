@@ -1,0 +1,142 @@
+Enabled: true
+Loader: Fabric
+Version: '1.20.2'
+Directory: 'C:\Users\giano\AppData\Roaming\.minecraft'
+Mods:
+  Libraries:
+    - https://modrinth.com/mod/architectury-api
+    - https://modrinth.com/mod/balm
+    - https://modrinth.com/mod/collective
+    - https://modrinth.com/mod/completeconfig
+    - https://modrinth.com/mod/creativecore
+    - https://modrinth.com/mod/fabric-api
+    - https://modrinth.com/mod/fabric-language-kotlin
+    - https://modrinth.com/mod/forge-config-api-port
+    - https://modrinth.com/mod/jamlib
+    - https://modrinth.com/mod/libipn
+    - https://modrinth.com/mod/owo-lib
+    - https://www.curseforge.com/minecraft/mc-mods/malilib
+    #- https://modrinth.com/mod/cloth-config
+    #- https://modrinth.com/mod/iceberg
+    #- https://modrinth.com/mod/prism-lib
+    #- https://modrinth.com/mod/puzzles-lib
+    #- https://modrinth.com/mod/tcdcommons
+    #- https://www.curseforge.com/minecraft/mc-mods/bookshelf
+  Aesthetics:
+    - https://modrinth.com/mod/3dskinlayers
+    - https://modrinth.com/mod/advancement-plaques
+    - https://modrinth.com/mod/ambientsounds
+    - https://modrinth.com/mod/boat-item-view
+    - https://modrinth.com/mod/continuity
+    - https://modrinth.com/mod/dark-loading-screen
+    - https://modrinth.com/mod/dripsounds-fabric
+    - https://modrinth.com/mod/eating-animation
+    - https://modrinth.com/mod/explosive-enhancement
+    - https://modrinth.com/mod/extrasounds
+    - https://modrinth.com/mod/fallingleaves
+    - https://modrinth.com/mod/iris
+    - https://modrinth.com/mod/lambdynamiclights
+    - https://modrinth.com/mod/legendary-tooltips
+    - https://modrinth.com/mod/let-sleeping-dogs-lie
+    - https://modrinth.com/mod/make_bubbles_pop
+    - https://modrinth.com/mod/presence-footsteps
+    - https://modrinth.com/mod/sparkle
+    - https://modrinth.com/mod/wakes
+    - https://www.curseforge.com/minecraft/mc-mods/chat-heads
+    - https://www.curseforge.com/minecraft/mc-mods/highlight
+    - https://www.curseforge.com/minecraft/mc-mods/medieval-music
+    #- https://modrinth.com/mod/blur-fabric
+    #- https://modrinth.com/mod/not-enough-animations
+    #- https://modrinth.com/mod/sound-physics-remastered
+    #- https://modrinth.com/mod/visuality
+  Creative Tools:
+    - https://modrinth.com/mod/axiom
+    - https://modrinth.com/mod/creative-one-punch
+    - https://www.curseforge.com/minecraft/mc-mods/nbt-autocomplete
+    - https://www.curseforge.com/minecraft/mc-mods/worldedit
+    - https://www.replaymod.com/
+  Enchanting:
+    #- https://modrinth.com/mod/infinity-and-mending
+    #- https://modrinth.com/mod/new-infinity-fix
+    #- https://modrinth.com/mod/overpoweredmending
+  General Utilities & Quality of Life:
+    - https://modrinth.com/mod/accurate-block-placement-reborn
+    - https://modrinth.com/mod/better-climbing
+    - https://modrinth.com/mod/breakfree
+    - https://modrinth.com/mod/block-runner
+    - https://modrinth.com/mod/carpet
+    - https://modrinth.com/mod/clickthrough
+    - https://modrinth.com/mod/couplings
+    - https://modrinth.com/mod/dismount-entity
+    - https://modrinth.com/mod/easiervillagertrading
+    - https://modrinth.com/mod/easy-elytra-takeoff
+    - https://modrinth.com/mod/fallingtree
+    - https://modrinth.com/mod/inventory-profiles-next
+    - https://modrinth.com/mod/kleeslabs
+    - https://modrinth.com/mod/litematica-printer
+    - https://modrinth.com/mod/mouse-wheelie
+    - https://modrinth.com/mod/open-parties-and-claims
+    - https://modrinth.com/mod/quickcraft
+    - https://modrinth.com/mod/reacharound
+    - https://modrinth.com/mod/rightclickharvest
+    - https://modrinth.com/mod/scaffolding-drops-nearby
+    - https://modrinth.com/mod/universal-bone-meal
+    - https://modrinth.com/mod/universal-graves
+    - https://www.curseforge.com/minecraft/mc-mods/cleancut
+    - https://www.curseforge.com/minecraft/mc-mods/litematica
+    - https://www.curseforge.com/minecraft/mc-mods/trample-no-more
+    - https://www.curseforge.com/minecraft/mc-mods/tweakeroo
+    #- https://modrinth.com/mod/armor-statues
+    #- https://modrinth.com/mod/autofish-chao #Auto fishing
+    #- https://modrinth.com/mod/crops-love-rain
+    #- https://modrinth.com/mod/deepslatecutting
+    #- https://modrinth.com/mod/emoji-type
+    #- https://modrinth.com/mod/image2map
+    #- https://modrinth.com/mod/spyglass-Astronomy
+  Information:
+    - https://modrinth.com/mod/advancementinfo
+    - https://modrinth.com/mod/appleskin
+    - https://modrinth.com/mod/better-mount-hud
+    - https://modrinth.com/mod/better-stats
+    - https://modrinth.com/mod/deathlog
+    - https://modrinth.com/mod/grid
+    - https://modrinth.com/mod/idwtialsimmoedm
+    - https://modrinth.com/mod/mixin-conflict-helper
+    - https://modrinth.com/mod/mixintrace
+    - https://modrinth.com/mod/monsters-in-the-closet
+    - https://modrinth.com/mod/pickup-notifications
+    - https://modrinth.com/mod/status-effect-bars
+    - https://modrinth.com/mod/xaeros-minimap
+    - https://modrinth.com/mod/xaeros-world-map
+    - https://www.curseforge.com/minecraft/mc-mods/minihud
+    - https://www.curseforge.com/minecraft/mc-mods/slimyfloor
+  Menus:
+    - https://modrinth.com/mod/cherished-worlds
+    - https://modrinth.com/mod/dcwa #Disable Custom Worlds Advice
+    - https://modrinth.com/mod/draggable-lists
+    - https://modrinth.com/mod/modmenu
+    - https://www.curseforge.com/minecraft/mc-mods/better-advancements
+    #- https://modrinth.com/mod/isometric-renders
+    #- https://modrinth.com/mod/vtdownloader
+  Multiplayer/Server Utilities:
+    - https://modrinth.com/mod/syncmatica
+  Optimizations and Fixes:
+    - https://modrinth.com/mod/alternate-current
+    - https://modrinth.com/mod/c2me-fabric #Concurrent Chunk Management Engine (Fabric)
+    - https://modrinth.com/mod/dashloader
+    - https://modrinth.com/mod/ebe #Enhanced Block Entities
+    - https://modrinth.com/mod/fastanim
+    - https://modrinth.com/mod/ferrite-core
+    - https://modrinth.com/mod/indium
+    - https://modrinth.com/mod/item-model-fix
+    - https://modrinth.com/mod/krypton
+    - https://modrinth.com/mod/lazydfu
+    - https://modrinth.com/mod/lithium
+    - https://modrinth.com/mod/memoryleakfix
+    - https://modrinth.com/mod/rail-optimization
+    - https://modrinth.com/mod/reeses-sodium-options
+    - https://modrinth.com/mod/sodium
+    - https://modrinth.com/mod/sodium-extra
+    - https://modrinth.com/mod/tooltipfix
+    - https://modrinth.com/plugin/lmd #Let Me Despawn
+    #- https://modrinth.com/mod/starlight

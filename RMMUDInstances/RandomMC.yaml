@@ -1,0 +1,41 @@
+Enabled: true
+Loader: Fabric
+Version: '1.20.2'
+Directory: 'Z:\RandomMC'
+Mods:
+  Libraries:
+    - https://modrinth.com/mod/architectury-api
+    - https://modrinth.com/mod/collective
+    - https://modrinth.com/mod/fabric-api
+    - https://modrinth.com/mod/fabric-language-kotlin
+    - https://modrinth.com/mod/forge-config-api-port
+    - https://modrinth.com/mod/jamlib
+    - https://modrinth.com/mod/owo-lib
+    - https://modrinth.com/mod/puzzles-lib
+  Optimizations and Fixes:
+    - https://modrinth.com/mod/alternate-current
+    - https://modrinth.com/mod/c2me-fabric #Concurrent Chunk Management Engine (Fabric)
+    - https://modrinth.com/mod/ferrite-core
+    - https://modrinth.com/mod/krypton
+    - https://modrinth.com/mod/lazydfu
+    - https://modrinth.com/mod/lithium
+    - https://modrinth.com/mod/memoryleakfix
+    - https://modrinth.com/mod/rail-optimization
+    #- https://modrinth.com/mod/starlight
+  Information:
+    - https://modrinth.com/mod/better-stats
+    - https://modrinth.com/mod/deathlog
+    - https://modrinth.com/mod/ledger
+    - https://modrinth.com/mod/xaeros-minimap
+    - https://modrinth.com/mod/xaeros-world-map
+  General Utilities & Quality of Life:
+    - https://modrinth.com/mod/better-climbing
+    - https://modrinth.com/mod/carpet
+    - https://modrinth.com/mod/couplings
+    - https://modrinth.com/mod/crops-love-rain
+    - https://modrinth.com/mod/dismount-entity
+    - https://modrinth.com/mod/fallingtree
+    - https://modrinth.com/mod/open-parties-and-claims
+    - https://modrinth.com/mod/rightclickharvest
+    - https://modrinth.com/mod/universal-bone-meal
+    - https://modrinth.com/mod/universal-graves

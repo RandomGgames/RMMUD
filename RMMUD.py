@@ -525,8 +525,6 @@ def main():
     mods_set = ModsSet(instances)
     #logger.debug(f'ModsSet: {str(mods_set)}')
     
-    #parsed_instances = parseInstances(instances)
-    
     #if len(parsed_instances) == 0:
     #    logger.info(f'No instances exist!')
     #else:
