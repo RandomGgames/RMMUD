@@ -28,6 +28,7 @@ class Configuration:
             self.curseforge_api_key = str(curseforge_api_key)
         else:
             self.curseforge_api_key = None
+    
     def __str__(self):
         return f"Configuration: check_for_updates={self.check_for_updates}, downloads_folder='{self.downloads_folder}', instances_folder='{self.instances_folder}', curseforge_api_key='{self.curseforge_api_key}'"
 
@@ -38,6 +39,7 @@ class Instance:
         self.version = str(version)
         self.directory = Path(directory) if directory is not None else None
         self.mods = list(mods)
+    
     def __str__(self):
         return f"Instance: enabled={self.enabled}, loader='{self.loader}', version='{self.version}', directory='{self.directory}', mods='{self.mods}'"
 
@@ -53,6 +55,7 @@ class ModsSet:
                 mod_set.setdefault(version, {}).setdefault(loader, {}).setdefault(mod, [])
                 if directory not in mod_set[version][loader][mod]: mod_set[version][loader][mod].append(directory)
         return mod_set
+    
     def __str__(self):
         string_dirs_dataset = self.dataset
         for version in string_dirs_dataset:
@@ -525,11 +528,11 @@ def main():
     mods_set = ModsSet(instances)
     logger.debug(f'ModsSet: {str(mods_set)}')
     
-    #if len(parsed_instances) == 0:
-    #    logger.info(f'No instances exist!')
-    #else:
-    #    updateMods(parsed_instances, config)
-    #    deleteDuplicateMods(instances)
+    if len(mods_set) == 0:
+        logger.info(f'No instances exist!')
+    else:
+        updateMods(mods_set, config)
+        deleteDuplicateMods(instances)
     
     logger.info('DONE.')
 
