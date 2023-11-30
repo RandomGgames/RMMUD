@@ -42,8 +42,7 @@ class Instance:
         self.mods = list(mods)
     
     def __str__(self):
-        attributes = ', '.join([f"{attribute}={getattr(self, attribute)}" for attribute in vars(self)])
-        return f"Instance({attributes})"
+        return str(vars(self))
 
 class ModsSet:
     def __init__(self, instances: list[Instance]):
@@ -59,13 +58,7 @@ class ModsSet:
         return mod_set
     
     def __str__(self):
-        string_dirs_dataset = self.dataset
-        for version in string_dirs_dataset:
-            for loader in string_dirs_dataset[version]:
-                for mod in string_dirs_dataset[version][loader]:
-                    for i, dir in enumerate(string_dirs_dataset[version][loader][mod]):
-                        string_dirs_dataset[version][loader][mod][i] = str(dir)
-        return str(string_dirs_dataset)
+        return str(self.dataset)
     
 def extractNestedStrings(iterable: str | list | dict | tuple) -> list[str]:
     logger.debug('Extracting nested strings...')
@@ -541,7 +534,7 @@ def main():
     #for instance in instances: logger.debug(f'Instance: {instance}')
     
     mods_set = ModsSet(instances)
-    #logger.debug(f'ModsSet: {str(mods_set)}')
+    #logger.debug(f'{str(mods_set) = }')
     
     if len(instances) == 0:
         logger.info(f'No instances exist!')
