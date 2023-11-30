@@ -59,7 +59,68 @@ class ModsSet:
     
     def __str__(self):
         return str(self.dataset)
+
+class Modrinth:
+    class Mod:
+        def __init__(self, url: urlparse):
+            
+            def _validate_url(self, url: urlparse):
+                try:
+                    url_path_split = self.url_path.split('/')
+                except Exception as e:
+                    raise ValueError('Invalid URL. The path should contain more path objects.')
+                if url_path_split[1] != 'mod':
+                    raise ValueError('Invalid URL. The path should contain the type and slug|id.')
+                try:
+                    self.slug = url_path_split[2]
+                except Exception as e:
+                    raise ValueError('Invalid URL. The path should contain the slug|id.')
+                return True
+                
+                
+                
+            
+            self.url = url
+            self.url_path = url.path
+            self.url_netloc = url.netloc
+            self.url_params = url.params
+            
+        def __str__(self):
+            return str(vars(self))
     
+    def download(self, path):
+        base_url = (f'https://api.modrinth.com/v2/project/{self.slug}/version')
+    
+    #    if mod_version == 'latest_version':
+    #        params = {'loaders': [mod_loader], 'game_versions': [minecraft_version]}
+    #    else:
+    #        params = {'loaders': [mod_loader]}
+    #    url = f'{base_url}?{"&".join([f"{key}={json.dumps(value)}" for key, value in params.items()])}'
+    #    try:
+    #        modrinth_header = {'User-Agent': 'RandomGgames/RMMUD (randomggamesofficial@gmail.com)'}
+    #        response = requests.get(url, headers = modrinth_header).json()
+    #    except Exception as e:
+    #        logger.warning(f'Could not update "{mod_id}": {e}')
+    #        return
+    #    response = sorted(response, key = lambda x: datetime.fromisoformat(x['date_published'][:-1]), reverse = True)
+    #    if mod_version == 'latest_version':
+    #        if len(response) > 0:
+    #            desired_mod_version = response[0]
+    #        else:
+    #            logger.warning(f'Could not find "{mod_id}" for {mod_loader} {minecraft_version}. https://modrinth.com/mod/{mod_id}')
+    #            return
+    #    else:
+    #        if len(response) > 0:
+    #            desired_mod_version = [version for version in response if version['version_number'] == mod_version][0]
+    #        else:
+    #            logger.warning(f'Could not find "{mod_id} {mod_version}" for {mod_loader} {minecraft_version}')
+    #            return
+    #    desired_mod_version_files = desired_mod_version['files']
+    #    if any(file['primary'] == True in file for file in desired_mod_version_files):
+    #        desired_mod_version_files = [file for file in desired_mod_version_files if file['primary'] == True]
+    #    desired_mod_version_file = desired_mod_version_files[0]
+    
+
 def extractNestedStrings(iterable: str | list | dict | tuple) -> list[str]:
     logger.debug('Extracting nested strings...')
     def extract(iterable: str | list | dict | tuple) -> list[str]:
