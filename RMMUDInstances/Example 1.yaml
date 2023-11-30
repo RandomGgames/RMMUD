@@ -4,5 +4,5 @@ Version: '1.20.2'
 Directory: '.\.minecraft'
 Mods:
   - https://modrinth.com/mod/fabric-api
-  - https://modrinth.com/mod/iris
-  - https://modrinth.com/mod/sodium
+  - https://www.curseforge.com/minecraft/mc-mods/chat-heads
+  - https://www.replaymod.com/
