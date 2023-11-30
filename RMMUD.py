@@ -48,6 +48,7 @@ class ModsSet:
     def __init__(self, instances: list[Instance]):
         self.instances = instances
         self.dataset = self.generate_dataset()
+    
     def generate_dataset(self) -> Dict[str, Dict[str, Dict[str, List[Path]]]]:
         mod_set = {}
         for instance in self.instances:
@@ -522,15 +523,17 @@ def updateMods(mods_set: dict, config: Configuration) -> None:
         for loader in mods_set[version]:
             for mod_url in mods_set[version][loader]:
                 dirs = mods_set[version][loader][mod_url]
-                
                 url = urlparse(mod_url)
-                logger.debug(f'{url = }')
+                netloc = url.netloc
+                #logger.debug(f'{url = }')
+                #logger.debug(f'{netloc = }')
                 #logger.debug(f'{version = }, {loader = }, {mod_url = }, {dirs = }')
                 
-                website = url.netloc
-                match website:
+                match netloc:
                     case 'modrinth.com':
                         pass
+                        mod = Modrinth.Mod(url)
+                        print(f'{str(mod) = }')
                         #downloadModrinthMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs)
                     case 'curseforge.com':
                         pass
