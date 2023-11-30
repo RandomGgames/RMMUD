@@ -449,35 +449,40 @@ def downloadCurseforgeMod(mod_id: str, mod_loader: str, minecraft_version: str, 
                     logger.warning(f'Could not copy "{downloaded_file_path}" into "{instance_dir}": {e}')
                     continue
 
-def updateMods(instances: list[Instance], config: Configuration) -> None: # TODO Rework this to work with class
+def updateMods(mods_set: dict, config: Configuration) -> None:
+    mods_set = mods_set.dataset
+    
     try:
-        for instance in instances:
-            print(instance)
+        logger.debug(f'Creating folders to download mods into...')
+        for version in mods_set:
+            for loader in mods_set[version]:
+                path = os.path.join(config.downloads_folder, loader, version)
+                if not os.path.exists(path):
+                    os.makedirs(path)
+                    logger.debug(f'Created "{path}"')
     except Exception as e:
+        logger.exception(f'Could not create folder to download mods into due to {repr(e)}')
         raise e
     
-    #logger.debug(f'Creating folders to download mods into')
-    #for mod_loader in instances:
-    #    for minecraft_version in instances[mod_loader]['mods']:
-    #        dir = ""
-    #        try:
-    #            dir = os.path.join(config['Downloads Folder'], mod_loader, minecraft_version)
-    #            os.makedirs(dir, exist_ok = True)
-    #        except Exception as e:
-    #            logger.warning(f'Could not create download folder {dir}: {e}')
-    #            raise e
-    #
-    #logger.info(f'UPDATING MODS')
-    #for mod_loader in instances:
-    #    for minecraft_version in instances[mod_loader]['mods']:
-    #        for mod_id in instances[mod_loader]['mods'][minecraft_version]:
-    #            for website in instances[mod_loader]['mods'][minecraft_version][mod_id]:
-    #                for mod_version in instances[mod_loader]['mods'][minecraft_version][mod_id][website]:
-    #                    instance_dirs = instances[mod_loader]['mods'][minecraft_version][mod_id][website][mod_version]['directories']
-    #                    if website == 'modrinth.com':
-    #                        downloadModrinthMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs)
-    #                    elif website == 'curseforge.com':
-    #                        downloadCurseforgeMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs, config['CurseForge API Key'])
+    for version in mods_set:
+        for loader in mods_set[version]:
+            for mod_url in mods_set[version][loader]:
+                dirs = mods_set[version][loader][mod_url]
+                
+                url = urlparse(mod_url)
+                logger.debug(f'{url = }')
+                #logger.debug(f'{version = }, {loader = }, {mod_url = }, {dirs = }')
+                
+                website = url.netloc
+                match website:
+                    case 'modrinth.com':
+                        pass
+                        #downloadModrinthMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs)
+                    case 'curseforge.com':
+                        pass
+                        #downloadCurseforgeMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs, config['CurseForge API Key'])
+                    case _:
+                        pass
 
 def deleteDuplicateMods(instances: list[Instance]) -> None: # TODO Rework this to work with class
     logger.info(f'DELETING OUTDATED MODS')
@@ -535,13 +540,13 @@ def main():
     instances = loadInstances(config.instances_folder)
     #for instance in instances: logger.debug(f'Instance: {instance}')
     
-    #mods_set = ModsSet(instances)
+    mods_set = ModsSet(instances)
     #logger.debug(f'ModsSet: {str(mods_set)}')
     
     if len(instances) == 0:
         logger.info(f'No instances exist!')
     else:
-        updateMods(instances, config)
+        updateMods(mods_set, config)
         #deleteDuplicateMods(instances)
     
     logger.info('DONE.')
