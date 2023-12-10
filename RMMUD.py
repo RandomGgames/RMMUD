@@ -63,28 +63,28 @@ class ModsSet:
 
 class Modrinth:
     class Mod:
-        def __init__(self, url: urlparse):
-            
+        def __init__(self, url: urlparse, game_version: str) -> None:
             def _validate_url(self, url: urlparse):
                 try:
-                    url_path_split = self.url_path.split('/')
+                    url_path_split = str(self.url.path).split('/')
                 except Exception as e:
-                    raise ValueError('Invalid URL. The path should contain more path objects.')
+                    raise ValueError(f'Invalid URL "{url}". The path should contain more path objects.')
                 if url_path_split[1] != 'mod':
-                    raise ValueError('Invalid URL. The path should contain the type and slug|id.')
+                    raise ValueError(f'Invalid URL "{url}". The path should contain the type and slug|id.')
                 try:
                     self.slug = url_path_split[2]
                 except Exception as e:
-                    raise ValueError('Invalid URL. The path should contain the slug|id.')
+                    raise ValueError(f'Invalid URL "{url}". The path should contain the slug|id.')
                 return True
-                
-                
-                
+            
+            if not _validate_url(self, url):
+                raise TypeError('Url type') # NOTE change this message in the future
             
             self.url = url
-            self.url_path = url.path
-            self.url_netloc = url.netloc
-            self.url_params = url.params
+            self.game_version = game_version
+            #self.url_path = url.path
+            #self.url_netloc = url.netloc
+            #self.url_params = url.params
             
         def __str__(self):
             return str(vars(self))
@@ -519,21 +519,21 @@ def updateMods(mods_set: dict, config: Configuration) -> None:
         logger.exception(f'Could not create folder to download mods into due to {repr(e)}')
         raise e
     
-    for version in mods_set:
-        for loader in mods_set[version]:
-            for mod_url in mods_set[version][loader]:
-                dirs = mods_set[version][loader][mod_url]
+    for game_version in mods_set:
+        for loader in mods_set[game_version]:
+            for mod_url in mods_set[game_version][loader]:
+                dirs = mods_set[game_version][loader][mod_url]
                 url = urlparse(mod_url)
                 netloc = url.netloc
                 #logger.debug(f'{url = }')
                 #logger.debug(f'{netloc = }')
-                #logger.debug(f'{version = }, {loader = }, {mod_url = }, {dirs = }')
+                #logger.debug(f'{game_version = }, {loader = }, {mod_url = }, {dirs = }')
                 
                 match netloc:
                     case 'modrinth.com':
                         pass
-                        mod = Modrinth.Mod(url)
-                        print(f'{str(mod) = }')
+                        mod = Modrinth.Mod(url, game_version)
+                        logger.debug(f'{str(mod) = }')
                         #downloadModrinthMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs)
                     case 'curseforge.com':
                         pass
