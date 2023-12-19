@@ -62,18 +62,29 @@ class ModsSet:
         return str(self.dataset)
 
 class Modrinth:
-    url_header = {'User-Agent': 'RandomGgames/RMMUD (randomggamesofficial@gmail.com)'}
-    
-    class Mod():
-        def __init__(self, url: urlparse, game_version: str, mod_loader: str):
-            self.slug = None
+    class Mod:
+        def __init__(self, url: urlparse, game_version: str) -> None:
+            def _validate_url(self, url: urlparse):
+                try:
+                    url_path_split = str(self.url.path).split('/')
+                except Exception as e:
+                    raise ValueError(f'Invalid URL "{url}". The path should contain more path objects.')
+                if url_path_split[1] != 'mod':
+                    raise ValueError(f'Invalid URL "{url}". The path should contain the type and slug|id.')
+                try:
+                    self.slug = url_path_split[2]
+                except Exception as e:
+                    raise ValueError(f'Invalid URL "{url}". The path should contain the slug|id.')
+                return True
+            
+            if not _validate_url(self, url):
+                raise TypeError('Url type') # NOTE change this message in the future
+            
             self.url = url
-            self.url_path = url.path
-            self.url_netloc = url.netloc
-            self.url_params = url.params
-            self.game_version = str(game_version)
-            self.mod_loader = str(mod_loader)
-            self.mod_version = 'latest'
+            self.game_version = game_version
+            #self.url_path = url.path
+            #self.url_netloc = url.netloc
+            #self.url_params = url.params
             
             try:
                 url_path_split = self.url_path.split('/')[1:]
@@ -460,21 +471,24 @@ def updateMods(mods_set: dict, config: Configuration) -> None:
         raise e
     
     for game_version in mods_set:
-        for mod_loader in mods_set[game_version]:
-            for mod_url in mods_set[game_version][mod_loader]:
-                dirs = mods_set[game_version][mod_loader][mod_url]
+        for loader in mods_set[game_version]:
+            for mod_url in mods_set[game_version][loader]:
+                dirs = mods_set[game_version][loader][mod_url]
                 url = urlparse(mod_url)
                 netloc = url.netloc
-                download_path = os.path.join(config.downloads_folder, game_version, mod_loader)
+                #logger.debug(f'{url = }')
+                #logger.debug(f'{netloc = }')
+                #logger.debug(f'{game_version = }, {loader = }, {mod_url = }, {dirs = }')
                 
                 match netloc:
                     case 'modrinth.com':
-                        mod = Modrinth.Mod(url, game_version, mod_loader)
-                        logger.info(f'Updating {mod.slug} version {mod.mod_version}...')
-                        try:
-                            mod.download(download_path, dirs)
-                        except:
-                            pass
+                        pass
+                        mod = Modrinth.Mod(url, game_version)
+                        logger.debug(f'{str(mod) = }')
+                        #downloadModrinthMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs)
+                    case 'curseforge.com':
+                        pass
+                        #downloadCurseforgeMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs, config['CurseForge API Key'])
                     case _:
                         logger.warning(f'This script cannot handle urls from {netloc}. If you wish to be able to use this site, request it on the GitHub page!')
                         pass
