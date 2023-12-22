@@ -67,19 +67,27 @@ class Modrinth:
             
             file_name = mod_version_file['filename']
             download_url = mod_version_file['url']
+            mod_file = None
+            
             for copy_dir in copy_dirs:
                 copy_path = os.path.join(copy_dir, file_name)
                 
-                if os.path.exists(copy_dir) and not checkIfZipIsCorrupted():
+                if os.path.exists(copy_dir):
+                    
+                    if not os.path.exists(copy_path) or checkIfZipIsCorrupted(copy_path):
+                        
+                        if mod_file is None:
+                            mod_file = requests.get(download_url, headers = Modrinth.url_header)
+                        
+                        with open(copy_path, 'wb') as f:
+                            f.write(mod_file.content)
+                            logger.info(f'Downloaded "{file_name}" into "{copy_path}"')
+                        
             
             #self.download_path = os.path.join(self.file_name)
             #
             #if (not os.path.exists(self.download_path) or checkIfZipIsCorrupted(self.download_path)) and os.path.exists(download_dir):
             #    try:
-            #        logger.debug(f'    Downloading "{self.slug}" into "{download_dir}"...')
-            #        response = requests.get(self.download_url, headers = Modrinth.url_header)
-            #        with open(self.download_path, 'wb') as f: f.write(response.content)
-            #        logger.info(f'    Downloaded "{self.file_name}" into "{download_dir}"')
             #        
             #        for copy_destination in copy_to_paths:
             #            try:
