@@ -9,20 +9,33 @@ from urllib.parse import urlparse, urlunparse
 logger = logging.getLogger(__name__)
 from RMMUD import checkIfZipIsCorrupted
 
-ModLoaders = typing.Literal['fabric', 'forge', 'quilt']
+ModLoaders = typing.Literal['fabric', 'forge']
 
 class Modrinth:
     url_header = {'User-Agent': 'RandomGgames/RMMUD (randomggamesofficial@gmail.com)'}
+    _instances = {}
     
     def _validate_url(url):
         if url.netloc != 'modrinth.com':
             raise ValueError('URL link does not go to modrinth.com')
     
     class Mod:
+        def __new__(cls, url: typing.Union[str, urlparse], game_version: str, mod_loader: ModLoaders):
+            url = urlparse(url)
+            mod_key = (url.geturl(), game_version, mod_loader)
+            existing_instance = Modrinth._instances.get(mod_key)
+            if existing_instance:
+                return existing_instance
+            else:
+                new_instance = super().__new__(cls)
+                Modrinth._instances[mod_key] = new_instance
+                return new_instance
+        
         def __init__(self, url: typing.Union[str, urlparse], game_version: str, mod_loader: ModLoaders):
             self.url = urlparse(url)
             Modrinth._validate_url(self.url)
             self._validate_url(self.url)
+            self._mod_key = (self.url.geturl(), game_version, mod_loader)
             url_path_split = self.url.path.split('/')[1:]
             self.slug = url_path_split[1]
             if len(url_path_split) == 4:
@@ -56,7 +69,7 @@ class Modrinth:
                 desired_mod_version = next((v for v in response if v['version_number'] == self.mod_version), None)
             return desired_mod_version
             
-        def download(self, copy_dirs: typing.List[Path]):
+        def download(self, instance_dirs: typing.List[Path]):
             mod_version = self._get_version()
             if mod_version is None: raise LookupError('Could not find mod version.')
             
@@ -69,38 +82,21 @@ class Modrinth:
             download_url = mod_version_file['url']
             mod_file = None
             
-            for copy_dir in copy_dirs:
-                copy_path = os.path.join(copy_dir, file_name)
+            for instance_dir in instance_dirs:
+                copy_path = os.path.join(instance_dir, 'mods', file_name)
                 
-                if os.path.exists(copy_dir):
+                if not os.path.exists(instance_dir):
+                    class DirectoryNotFoundError(FileNotFoundError): pass
+                    raise DirectoryNotFoundError(f'The directory "{instance_dir}" does not exist.')
                     
-                    if not os.path.exists(copy_path) or checkIfZipIsCorrupted(copy_path):
-                        
-                        if mod_file is None:
-                            mod_file = requests.get(download_url, headers = Modrinth.url_header)
-                        
-                        with open(copy_path, 'wb') as f:
-                            f.write(mod_file.content)
-                            logger.info(f'Downloaded "{file_name}" into "{copy_path}"')
-                        
-            
-            #self.download_path = os.path.join(self.file_name)
-            #
-            #if (not os.path.exists(self.download_path) or checkIfZipIsCorrupted(self.download_path)) and os.path.exists(download_dir):
-            #    try:
-            #        
-            #        for copy_destination in copy_to_paths:
-            #            try:
-            #                logger.debug(f'    Copying {self.download_path} into {copy_destination}...')
-            #                shutil.copy(self.download_path, copy_destination)
-            #                logger.info(f'    Copied mod into "{copy_destination}".')
-            #            except Exception as e:
-            #                logger.debug
-            #            
-            #    except Exception as e:
-            #        logger.error(f'Could not download mod due to {repr(e)}')
-            #        raise e
+                if not os.path.exists(copy_path) or checkIfZipIsCorrupted(copy_path):
+                    if mod_file is None:
+                        mod_file = requests.get(download_url, headers = Modrinth.url_header)
+                    
+                    with open(copy_path, 'wb') as f:
+                        f.write(mod_file.content)
+                        logger.info(f'Downloaded "{file_name}" into "{copy_path}"')
 
-test = Modrinth.Mod('https://modrinth.com/mod/fabric-api', '1.20.2', 'fabric')._get_version()
-pass
+Modrinth.Mod('https://modrinth.com/mod/fabric-api', '1.20.2', 'fabric').download([Path('./test')])
+Modrinth.Mod('https://modrinth.com/mod/fabric-api', '1.20.2', 'fabric').download([Path('./test')])
 exit()
