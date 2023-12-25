@@ -121,10 +121,13 @@ class Modrinth:
         def _get_version(self):
             base_url = urlparse(f'https://api.modrinth.com/v2/project/{self.slug}/version')
             if self.mod_version is None:
-                query = f'loader=["{self.mod_loader}"]&game_versions=["{self.game_version}"]'
+                query = f'loaders=["{self.mod_loader}"]&game_versions=["{self.game_version}"]'
             else:
-                query = f'loader=["{self.mod_loader}"]'
+                query = f'loaders=["{self.mod_loader}"]'
+            print(base_url.geturl())
+            print(query)
             url = urlunparse(base_url._replace(query = query))
+            print(url)
             response = requests.get(url, headers = Modrinth.url_header).json()
             if self.mod_version is None:
                 desired_mod_version = sorted(response, key = lambda x: datetime.fromisoformat(x['date_published'][:-1]), reverse = True)
@@ -160,16 +163,15 @@ class Modrinth:
                 class DirectoryNotFoundError(FileNotFoundError): pass
                 raise DirectoryNotFoundError(f'The minecraft directory "{instance_dir}" cannot be found.')
             
-            if checkIfZipIsCorrupted(copy_path):
-                logger.info(f'You already have "{copy_path}" downloaded but it\'s corrupted. Deleting...')
+            if os.path.exists(copy_path) and checkIfZipIsCorrupted(copy_path):
+                logger.info(f'    You already have "{copy_path}" downloaded but it\'s corrupted. Deleting...')
                 os.remove(copy_path)
-                logger.info(f'Deleted "{copy_path}".')
+                logger.info(f'    Deleted "{copy_path}".')
             
             if not os.path.exists(copy_path):
-                logger.debug(f'It seems like the current file is corrupted. Replacing...')
                 with open(copy_path, 'wb') as f:
                     f.write(self.mod_file)
-                    logger.info(f'Downloaded "{self.file_name}" into "{copy_dir}".')
+                    logger.info(f'    Downloaded "{self.file_name}" into "{copy_dir}".')
 
 def createDir(dir: Path) -> None:
     try:
@@ -468,7 +470,7 @@ def loadInstances(instances_dir: str) -> list[Instance]:
 #                    continue
 
 def updateMods(instances: typing.List[Instance], config: Configuration) -> None:
-    logger.info('UPDATING MODS')
+    logger.info('UPDATING MODS...')
     
     for instance in instances:
         name = instance.name
@@ -484,10 +486,10 @@ def updateMods(instances: typing.List[Instance], config: Configuration) -> None:
             
             match mod_url.netloc:
                 case 'modrinth.com':
-                    Modrinth.Mod(mod_url, game_version, mod_loader).download(directory)
+                    Modrinth.Mod(mod_url, game_version, mod_loader.lower()).download(directory)
                     pass
                 case _:
-                    logger.warning(f'    Cannot update {mod_url.geturl()}. Script cannot currently handle URLs from {mod_url.netloc}.')
+                    logger.warning(f'Cannot update {mod_url.geturl()}. Script cannot currently handle URLs from {mod_url.netloc}.')
         
     #mods_set = mods_set.dataset
     #
