@@ -2,12 +2,27 @@ import logging
 import os
 import requests
 import shutil
+import sys
+import os
 import typing
 from datetime import datetime
 from pathlib import Path
 from urllib.parse import urlparse, urlunparse
-logger = logging.getLogger(__name__)
 from RMMUD import checkIfZipIsCorrupted
+logger = logging.getLogger(__name__)
+
+logging.basicConfig(
+        level = logging.INFO,
+        format = '%(asctime)s.%(msecs)03d %(levelname)s: %(message)s',
+        datefmt = '%Y/%m/%d %H:%M:%S',
+        encoding = 'utf-8',
+        handlers = [
+            logging.FileHandler('latest.log', encoding = 'utf-8'),
+            logging.StreamHandler(sys.stdout)
+        ]
+)
+logging.getLogger('requests').setLevel(logging.WARNING)
+logging.getLogger('urllib3').setLevel(logging.WARNING)
 
 ModLoaders = typing.Literal['fabric', 'forge']
 
@@ -22,20 +37,24 @@ class Modrinth:
     class Mod:
         def __new__(cls, url: typing.Union[str, urlparse], game_version: str, mod_loader: ModLoaders):
             url = urlparse(url)
-            mod_key = (url.geturl(), game_version, mod_loader)
-            existing_instance = Modrinth._instances.get(mod_key)
+            isntance_key = (url.geturl(), game_version, mod_loader)
+            existing_instance = Modrinth._instances.get(isntance_key)
+            
             if existing_instance:
                 return existing_instance
             else:
                 new_instance = super().__new__(cls)
-                Modrinth._instances[mod_key] = new_instance
+                new_instance._already_exists = False
+                Modrinth._instances[isntance_key] = new_instance
                 return new_instance
         
         def __init__(self, url: typing.Union[str, urlparse], game_version: str, mod_loader: ModLoaders):
+            if self._already_exists: return
+            
             self.url = urlparse(url)
             Modrinth._validate_url(self.url)
             self._validate_url(self.url)
-            self._mod_key = (self.url.geturl(), game_version, mod_loader)
+            
             url_path_split = self.url.path.split('/')[1:]
             self.slug = url_path_split[1]
             if len(url_path_split) == 4:
@@ -44,6 +63,13 @@ class Modrinth:
                 self.mod_version = None
             self.mod_loader = str(mod_loader)
             self.game_version = str(game_version)
+            
+            self.file_name = None
+            self.download_url = None
+            self.mod_file = None
+            
+            self._mod_key = (self.url.geturl(), game_version, mod_loader)
+            self._already_exists = True
             
         def _validate_url(self, url):
             try:
@@ -70,33 +96,36 @@ class Modrinth:
             return desired_mod_version
             
         def download(self, instance_dirs: typing.List[Path]):
-            mod_version = self._get_version()
-            if mod_version is None: raise LookupError('Could not find mod version.')
-            
-            mod_version_files = mod_version['files']
-            if any(file['primary'] == True in file for file in mod_version_files):
-                mod_version_files = [file for file in mod_version_files if file['primary'] == True]
-            mod_version_file = mod_version_files[0]
-            
-            file_name = mod_version_file['filename']
-            download_url = mod_version_file['url']
-            mod_file = None
+            if self.mod_file is None:
+                mod_version = self._get_version()
+                if mod_version is None: raise LookupError('Could not find mod version.')
+                
+                mod_version_files = mod_version['files']
+                if any(file['primary'] == True in file for file in mod_version_files):
+                    mod_version_files = [file for file in mod_version_files if file['primary'] == True]
+                mod_version_file = mod_version_files[0]
+                
+                self.file_name = mod_version_file['filename']
+                self.download_url = mod_version_file['url']
             
             for instance_dir in instance_dirs:
-                copy_path = os.path.join(instance_dir, 'mods', file_name)
+                copy_dir = os.path.join(instance_dir, 'mods')
+                copy_path = os.path.join(copy_dir, self.file_name)
                 
                 if not os.path.exists(instance_dir):
                     class DirectoryNotFoundError(FileNotFoundError): pass
                     raise DirectoryNotFoundError(f'The directory "{instance_dir}" does not exist.')
                     
                 if not os.path.exists(copy_path) or checkIfZipIsCorrupted(copy_path):
-                    if mod_file is None:
-                        mod_file = requests.get(download_url, headers = Modrinth.url_header)
+                    if self.mod_file is None:
+                        self.mod_file = requests.get(self.download_url, headers = Modrinth.url_header).content
                     
                     with open(copy_path, 'wb') as f:
-                        f.write(mod_file.content)
-                        logger.info(f'Downloaded "{file_name}" into "{copy_path}"')
+                        f.write(self.mod_file)
+                        logger.info(f'Downloaded "{self.file_name}" into "{copy_dir}"')
 
 Modrinth.Mod('https://modrinth.com/mod/fabric-api', '1.20.2', 'fabric').download([Path('./test')])
 Modrinth.Mod('https://modrinth.com/mod/fabric-api', '1.20.2', 'fabric').download([Path('./test')])
+Modrinth.Mod('https://modrinth.com/mod/fabric-api', '1.20.4', 'fabric').download([Path('./test')])
+Modrinth.Mod('https://modrinth.com/mod/fabric-api/version/0.91.0+1.20.1', '1.20.2', 'fabric').download([Path('./test')])
 exit()
