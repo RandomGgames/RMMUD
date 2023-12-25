@@ -97,7 +97,117 @@ class Modrinth:
             if len(url_path_split) not in (2, 4):
                 raise ValueError(f'Invalid URL. The path should contain a slug and optionally a specific version.')
             if url_path_split[0] not in ('mod', 'plugin', 'datapack'):
-                raise ValueError('Invalid URL. The path should contain a mod.')
+                raise ValueError('Invalid URL. The link should go to a mod.')
+        
+        def _get_version(self):
+            base_url = urlparse(f'https://api.modrinth.com/v2/project/{self.slug}/version')
+            if self.mod_version is None:
+                query = f'loaders=["{self.mod_loader}"]&game_versions=["{self.game_version}"]'
+            else:
+                query = f'loaders=["{self.mod_loader}"]'
+            print(base_url.geturl())
+            print(query)
+            url = urlunparse(base_url._replace(query = query))
+            print(url)
+            response = requests.get(url, headers = Modrinth.url_header).json()
+            if self.mod_version is None:
+                desired_mod_version = sorted(response, key = lambda x: datetime.fromisoformat(x['date_published'][:-1]), reverse = True)
+                if len(desired_mod_version) == 0:
+                    return None
+                else:
+                    return desired_mod_version[0]
+            else:
+                return next((v for v in response if v['version_number'] == self.mod_version), None)
+        
+        def download(self, instance_dir: Path):
+            logger.info(f'Updating {self.slug} for {self.game_version} in "{instance_dir}"')
+            if self.mod_file is None:
+                mod_version = self._get_version()
+                if mod_version is None:
+                    logger.warning(f'Could not find compatable version of {self.slug} for {self.mod_loader} {self.game_version}.')
+                    return None
+                
+                mod_version_files = mod_version['files']
+                if any(file['primary'] == True in file for file in mod_version_files):
+                    mod_version_files = [file for file in mod_version_files if file['primary'] == True]
+                mod_version_file = mod_version_files[0]
+                
+                self.file_name = mod_version_file['filename']
+                self.download_url = mod_version_file['url']
+                self.mod_file = requests.get(self.download_url, headers = Modrinth.url_header).content
+            
+            
+            copy_dir = os.path.join(instance_dir, 'mods')
+            copy_path = os.path.join(copy_dir, self.file_name)
+            
+            if not os.path.exists(instance_dir):
+                class DirectoryNotFoundError(FileNotFoundError): pass
+                raise DirectoryNotFoundError(f'The minecraft directory "{instance_dir}" cannot be found.')
+            
+            if os.path.exists(copy_path) and checkIfZipIsCorrupted(copy_path):
+                logger.info(f'    You already have "{copy_path}" downloaded but it\'s corrupted. Deleting...')
+                os.remove(copy_path)
+                logger.info(f'    Deleted "{copy_path}".')
+            
+            if not os.path.exists(copy_path):
+                with open(copy_path, 'wb') as f:
+                    f.write(self.mod_file)
+                    logger.info(f'    Downloaded "{self.file_name}" into "{copy_dir}".')
+
+class CurseForge:
+    _instances = {}
+    
+    def _validate_url(url):
+        if url.netloc != 'curseforge.com':
+            raise ValueError('URL link does not go to curseforge.com')
+    
+    class Mod:
+        def __new__(cls, url: urlparse, game_version: str, mod_loader: str):
+            isntance_key = (url.geturl(), game_version, mod_loader)
+            existing_instance = CurseForge._instances.get(isntance_key)
+            
+            if existing_instance:
+                return existing_instance
+            else:
+                new_instance = super().__new__(cls)
+                new_instance._already_exists = False
+                CurseForge._instances[isntance_key] = new_instance
+                return new_instance
+        
+        def __init__(self, url: urlparse, game_version: str, mod_loader: str):
+            if self._already_exists: return
+            
+            self.url = url
+            CurseForge._validate_url(self.url)
+            self._validate_url(self.url)
+            
+            url_path_split = self.url.path.split('/')[1:]
+            self.slug = url_path_split[2]
+            if len(url_path_split) == 5:
+                self.mod_version = url_path_split[4]
+            else:
+                self.mod_version = None
+            self.mod_loader = str(mod_loader)
+            self.game_version = str(game_version)
+            
+            self.file_name = None
+            self.download_url = None
+            self.mod_file = None
+            
+            self._mod_key = (self.url.geturl(), game_version, mod_loader)
+            self._already_exists = True
+            
+        def _validate_url(self, url):
+            try:
+                url_path_split = url.path.split('/')[1:]
+            except Exception as e:
+                raise ValueError('Invalid URL. The path should contain more path objects.')
+            if len(url_path_split) not in (3, 5):
+                raise ValueError(f'Invalid URL. The path should contain a slug and optionally a specific version.')
+            if url_path_split[0] != 'minecraft':
+                raise ValueError(f'Invalid URL. The link should be for Minecraft.')
+            if url_path_split[1] != 'mc-mods':
+                raise ValueError('Invalid URL. The link should go to a mod.')
         
         def _get_version(self):
             base_url = urlparse(f'https://api.modrinth.com/v2/project/{self.slug}/version')
@@ -349,6 +459,9 @@ def loadInstanceFile(path: Path) -> Instance | None:
         data['game_version'] = read_data['Version']
         data['directory'] = read_data['Directory']
         data['mod_urls'] = extractNestedStrings(read_data['Mods'])
+        for i, mod_url in enumerate(data['mod_urls']):
+            if mod_url.startswith('https://www.'):
+                data['mod_urls'][i] = f'https://{mod_url[12:]}'
         attribute_types = {
             "name": str,
             "enabled": bool,
@@ -386,70 +499,6 @@ def loadInstances(instances_dir: str) -> list[Instance]:
         logger.error(f'An error occured while loading instance files due to {repr(e)}')
         raise e
 
-#def downloadCurseforgeMod(mod_id: str, mod_loader: str, minecraft_version: str, mod_version: str, download_dir: str, instance_dirs: list[str], curseforge_api_key: str) -> None:
-#    logger.info(f'Updating {mod_id} for {mod_loader} {minecraft_version}')
-    
-#    # Getting mod ID
-#    logger.debug(f'Getting mod ID from CurseForge')
-#    url = 'https://api.curseforge.com/v1/mods/search'
-#    params = {'gameId': '432','slug': mod_id, 'classId': '6'}
-#    curseforge_header = {'Accept': 'application/json','x-api-key': curseforge_api_key}
-#    try:
-#        response = requests.get(url, params, headers = curseforge_header).json()['data']
-#        curseforge_mod_id = response[0]['id']
-#    except Exception as e:
-#        logger.warning(f'Could not fetch CurseForge ID for "{mod_id}": {repr(e)}')
-#        return
-    
-#    # Get latest or desired mod version
-#    logger.debug(f'Getting files from CurseForge')
-#    curseforge_mod_loader = { 'forge': 1, 'fabric': 4 }.get(mod_loader, None)
-#    if mod_version == 'latest_version':
-#        try:
-#            url = (f'https://api.curseforge.com/v1/mods/{curseforge_mod_id}/files')
-#            params = {'gameVersion': str(minecraft_version), 'modLoaderType': curseforge_mod_loader}
-#            response = requests.get(url, params = params, headers = curseforge_header).json()['data']
-#            desired_mod_version_file = list(file for file in response if minecraft_version in file['gameVersions'])[0]
-#        except Exception as e:
-#            logger.warning(f'Could not find "{mod_id}" for {mod_loader} {minecraft_version}. https://www.curseforge.com/minecraft/mc-mods/{mod_id}')
-#            return
-#    else:
-#        try:
-#            desired_mod_version_file = requests.get(f'https://api.curseforge.com/v1/mods/{curseforge_mod_id}/files/{mod_version}', params = {'modLoaderType': curseforge_mod_loader}, headers = curseforge_header).json()['data']
-#        except Exception as e:
-#            logger.warning(f'Could not find "{mod_id} {mod_version}" for {mod_loader} {minecraft_version}')
-    
-#    logger.debug(f'Downloading desired version from CurseForge')
-#    file_name = desired_mod_version_file['fileName']
-#    download_url = desired_mod_version_file['downloadUrl']
-#    if download_url == None:
-#        logger.debug(f'Mod dev has disabled extenal program support for this mod, but I have a workaround ;)')
-#        download_url = f'https://edge.forgecdn.net/files/{str(desired_mod_version_file["id"])[0:4]}/{str(desired_mod_version_file["id"])[4:7]}/{file_name}'
-#    download_path = os.path.join(download_dir, mod_loader, minecraft_version)
-#    downloaded_file_path = os.path.join(download_path, file_name)
-    
-#    if not os.path.exists(downloaded_file_path) or checkIfZipIsCorrupted(downloaded_file_path):
-#        try:
-#            response = requests.get(download_url, headers = curseforge_header)
-#            with open(downloaded_file_path, 'wb') as f: f.write(response.content)
-#        except Exception as e:
-#            logger.warning(f'Could not download "{mod_id}": {e}')
-#            return
-#        logger.info(f'Downloaded "{file_name}" into "{download_path}"')
-    
-#    logger.debug(f'Copying downloaded file into instance(s)')
-#    for instance_dir in instance_dirs:
-#        instance_dir = os.path.join(instance_dir, 'mods')
-#        instance_file_path = os.path.join(instance_dir, file_name)
-#        if os.path.exists(instance_dir) and os.path.exists(downloaded_file_path):
-#            if not os.path.isfile(instance_file_path) or checkIfZipIsCorrupted(instance_file_path):
-#                try:
-#                    shutil.copy(downloaded_file_path, instance_file_path)
-#                    logger.info(f'Copied "{downloaded_file_path}" to "{instance_dir}"')
-#                except Exception as e:
-#                    logger.warning(f'Could not copy "{downloaded_file_path}" into "{instance_dir}": {e}')
-#                    continue
-
 def updateMods(instances: typing.List[Instance], config: Configuration) -> None:
     logger.info('UPDATING MODS...')
     
@@ -464,11 +513,13 @@ def updateMods(instances: typing.List[Instance], config: Configuration) -> None:
         
         for mod_url in mod_urls:
             mod_url = urlparse(mod_url)
+            netlock = mod_url.netloc
             
-            match mod_url.netloc:
-                case 'modrinth.com':
+            match netlock:
+                case 'modrinth.com' | 'www.modrinth.com':
                     Modrinth.Mod(mod_url, game_version, mod_loader.lower()).download(directory)
-                    pass
+                case 'curseforge.com' | 'www.curseforge.com':
+                    CurseForge.Mod(mod_url, game_version, mod_loader.lower()).download(directory)
                 case _:
                     logger.warning(f'Cannot update {mod_url.geturl()}. Script cannot currently handle URLs from {mod_url.netloc}.')
         
@@ -553,6 +604,7 @@ def updateMods(instances: typing.List[Instance], config: Configuration) -> None:
 #            logger.warning(f'Cannot auto-delete old mods in {instance_dir}: Only fabric mods supported atm.')
 
 def main():
+    global config
     config = loadConfig()
     
     createDir(config.instances_folder)
