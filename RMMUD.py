@@ -1,17 +1,18 @@
-import logging
-logger = logging.getLogger(__name__)
 import json
+import logging
 import os
 import requests
 import shutil
 import sys
+import typing
 import webbrowser
 import yaml
 import zipfile
 from datetime import datetime
 from pathlib import Path
-from typing import Literal, Union, List, Dict
+from send2trash import send2trash
 from urllib.parse import urlparse, urlunparse
+logger = logging.getLogger(__name__)
 
 __version_info__ = (3, 7, 1)
 __version__ = '.'.join(str(x) for x in __version_info__)
@@ -33,43 +34,151 @@ class Configuration:
         return f"Configuration: check_for_updates={self.check_for_updates}, downloads_folder='{self.downloads_folder}', instances_folder='{self.instances_folder}', curseforge_api_key='{self.curseforge_api_key}'"
 
 class Instance:
-    def __init__(self, name: str, enabled: bool, game_version: str, mod_loader: Literal['Fabric', 'Forge'], directory: Path = None, mods: list = []):
+    def __init__(self, name: str, enabled: bool, game_version: str, mod_loader: typing.Literal['Fabric', 'Forge'], directory: Path = None, mod_urls: list = []):
         self.name = str(name)
         self.enabled = bool(enabled)
         self.mod_loader = str(mod_loader)
         self.game_version = str(game_version)
         self.directory = Path(directory) if directory is not None else None
-        self.mods = list(mods)
+        self.mod_urls = list(mod_urls)
     
     def __str__(self):
         return str(vars(self))
 
-class ModsSet:
-    def __init__(self, instances: list[Instance]):
-        self.instances = instances
-        self.dataset = self.generate_dataset()
-    
-    def generate_dataset(self) -> Dict[str, Dict[str, Dict[str, List[Path]]]]:
-        mod_set = {}
-        for instance in self.instances:
-            for mod in instance.mods:
-                game_version, mod_loader, directory = instance.game_version, instance.mod_loader, instance.directory
-                mod_set.setdefault(game_version, {}).setdefault(mod_loader, {}).setdefault(mod, [])
-                if directory not in mod_set[game_version][mod_loader][mod]: mod_set[game_version][mod_loader][mod].append(directory)
-        return mod_set
-    
-    def __str__(self):
-        return str(self.dataset)
+#class ModsSet:
+#    def __init__(self, instances: list[Instance]):
+#        self.instances = instances
+#        self.dataset = self.generate_dataset()
+#    
+#    def generate_dataset(self) -> typing.Dict[str, typing.Dict[str, typing.Dict[str, typing.List[Path]]]]:
+#        mod_set = {}
+#        for instance in self.instances:
+#            for mod in instance.mods:
+#                game_version, mod_loader, directory = instance.game_version, instance.mod_loader, instance.directory
+#                mod_set.setdefault(game_version, {}).setdefault(mod_loader, {}).setdefault(mod, [])
+#                if directory not in mod_set[game_version][mod_loader][mod]: mod_set[game_version][mod_loader][mod].append(directory)
+#        return mod_set
+#    
+#    def __str__(self):
+#        return str(self.dataset)
 
+ModLoaders = typing.Literal['fabric', 'forge']
+
+class Modrinth:
+    url_header = {'User-Agent': 'RandomGgames/RMMUD (randomggamesofficial@gmail.com)'}
+    _instances = {}
+    
+    def _validate_url(url):
+        if url.netloc != 'modrinth.com':
+            raise ValueError('URL link does not go to modrinth.com')
+    
+    class Mod:
+        def __new__(cls, url: urlparse, game_version: str, mod_loader: ModLoaders):
+            isntance_key = (url.geturl(), game_version, mod_loader)
+            existing_instance = Modrinth._instances.get(isntance_key)
+            
+            if existing_instance:
+                return existing_instance
+            else:
+                new_instance = super().__new__(cls)
+                new_instance._already_exists = False
+                Modrinth._instances[isntance_key] = new_instance
+                return new_instance
+        
+        def __init__(self, url: urlparse, game_version: str, mod_loader: ModLoaders):
+            if self._already_exists: return
+            
+            self.url = url
+            Modrinth._validate_url(self.url)
+            self._validate_url(self.url)
+            
+            url_path_split = self.url.path.split('/')[1:]
+            self.slug = url_path_split[1]
+            if len(url_path_split) == 4:
+                self.mod_version = url_path_split[3]
+            else:
+                self.mod_version = None
+            self.mod_loader = str(mod_loader)
+            self.game_version = str(game_version)
+            
+            self.file_name = None
+            self.download_url = None
+            self.mod_file = None
+            
+            self._mod_key = (self.url.geturl(), game_version, mod_loader)
+            self._already_exists = True
+            
+        def _validate_url(self, url):
+            try:
+                url_path_split = url.path.split('/')[1:]
+            except Exception as e:
+                raise ValueError('Invalid URL. The path should contain more path objects.')
+            if len(url_path_split) not in (2, 4):
+                raise ValueError(f'Invalid URL. The path should contain a slug and optionally a specific version.')
+            if url_path_split[0] not in ('mod', 'plugin', 'datapack'):
+                raise ValueError('Invalid URL. The path should contain a mod.')
+        
+        def _get_version(self):
+            base_url = urlparse(f'https://api.modrinth.com/v2/project/{self.slug}/version')
+            if self.mod_version is None:
+                query = f'loader=["{self.mod_loader}"]&game_versions=["{self.game_version}"]'
+            else:
+                query = f'loader=["{self.mod_loader}"]'
+            url = urlunparse(base_url._replace(query = query))
+            response = requests.get(url, headers = Modrinth.url_header).json()
+            if self.mod_version is None:
+                desired_mod_version = sorted(response, key = lambda x: datetime.fromisoformat(x['date_published'][:-1]), reverse = True)
+                if len(desired_mod_version) == 0:
+                    return None
+                else:
+                    return desired_mod_version[0]
+            else:
+                return next((v for v in response if v['version_number'] == self.mod_version), None)
+        
+        def download(self, instance_dir: Path):
+            logger.info(f'Updating {self.slug} for {self.game_version} in "{instance_dir}"')
+            if self.mod_file is None:
+                mod_version = self._get_version()
+                if mod_version is None:
+                    logger.warning(f'Could not find compatable version of {self.slug} for {self.mod_loader} {self.game_version}.')
+                    return None
+                
+                mod_version_files = mod_version['files']
+                if any(file['primary'] == True in file for file in mod_version_files):
+                    mod_version_files = [file for file in mod_version_files if file['primary'] == True]
+                mod_version_file = mod_version_files[0]
+                
+                self.file_name = mod_version_file['filename']
+                self.download_url = mod_version_file['url']
+                self.mod_file = requests.get(self.download_url, headers = Modrinth.url_header).content
+            
+            
+            copy_dir = os.path.join(instance_dir, 'mods')
+            copy_path = os.path.join(copy_dir, self.file_name)
+            
+            if not os.path.exists(instance_dir):
+                class DirectoryNotFoundError(FileNotFoundError): pass
+                raise DirectoryNotFoundError(f'The minecraft directory "{instance_dir}" cannot be found.')
+            
+            if checkIfZipIsCorrupted(copy_path):
+                logger.info(f'You already have "{copy_path}" downloaded but it\'s corrupted. Deleting...')
+                os.remove(copy_path)
+                logger.info(f'Deleted "{copy_path}".')
+            
+            if not os.path.exists(copy_path):
+                logger.debug(f'It seems like the current file is corrupted. Replacing...')
+                with open(copy_path, 'wb') as f:
+                    f.write(self.mod_file)
+                    logger.info(f'Downloaded "{self.file_name}" into "{copy_dir}".')
 
 def createDir(dir: Path) -> None:
     try:
         if not os.path.exists(dir):
             logger.debug(f'    Creating dir "{str(dir)}"...')
             os.makedirs(dir)
-            logger.info(f'    Created "{str(dir)}".')
+            logger.info(f'    Created dir.')
     except Exception as e:
-        logger.error(f'Could not create folder')
+        logger.error(f'An error occured while creating dir due to {repr(e)}.')
         raise e
 
 def extractNestedStrings(iterable: str | list | dict | tuple) -> list[str]:
@@ -113,19 +222,22 @@ def readYAML(path: str) -> dict:
 
 def checkIfZipIsCorrupted(path: str) -> bool:
     try:
-        logger.debug(f'Checking if zip located at "{path}" is corrupted.')
+        logger.debug(f'    Checking if zip located at "{path}" is corrupted.')
+        if not os.path.exists(path):
+            logger.debug(f'    Could not check if zip is corrupted. It does not exist.')
+            return None
         with zipfile.ZipFile(path) as zip_file:
             zip_file.testzip()
-            logger.debug(f'Checked if zip is corrupted (it\'s not).')
+            logger.debug(f'    Checked if zip is corrupted (it\'s not).')
             return False
     except zipfile.BadZipFile as e:
-        logger.debug(f'Checked if zip is corrupted (it is) with the error {repr(e)}')
+        logger.debug(f'    Checked if zip is corrupted (it is) with the error {repr(e)}')
         return True
     except Exception as e:
         logger.error(f'An error occurred while checking if zip is corrupted due to {repr(e)}')
         raise e
 
-def compareTwoVersions(v1: str, v2: str) -> Literal['higher', 'lower', 'same']:
+def compareTwoVersions(v1: str, v2: str) -> typing.Literal['higher', 'lower', 'same']:
     try:
         logger.debug(f'    Comparing two versions together...')
         v1_list = list(map(int, v1.split('.')))
@@ -200,19 +312,19 @@ def checkForUpdate() -> bool | None:
     match version_check:
         case 'higher':
             try:
-                logger.info(f'There is an update available! ({current_version} (current) → {github_version} (latest))')
+                logger.info(f'    There is an update available! ({current_version} (current) → {github_version} (latest))')
                 promptToOpenURL('downloads page', 'Would you like to open the downloads page?', 'https://github.com/RandomGgames/RMMUD/releases')
                 exit()
             except:
                 return None
         case 'lower':
-            logger.info(f'You are currently using a pre-release or work-in-progress version! If you encounter any bugs or issues, please report any issues here: https://github.com/RandomGgames/RMMUD/issues. Thanks!')
+            logger.info(f'    You are currently using a pre-release or work-in-progress version! If you encounter any bugs or issues, please report any issues here: https://github.com/RandomGgames/RMMUD/issues. Thanks!')
             return False
         case 'same':
-            logger.info(f'You are already on the latest version.')
+            logger.info(f'    You are already on the latest version.')
             return None
 
-def verifyAttributeTypes(values: dict, types: dict[Union[type, tuple[type, ...]]]) -> bool:
+def verifyAttributeTypes(values: dict, types: dict[typing.Union[type, tuple[type, ...]]]) -> bool:
     logger.debug('    Verifying attribute types...')
     for key, val in values.items():
         expected_type = types[key]
@@ -253,14 +365,14 @@ def loadInstanceFile(path: Path) -> Instance | None:
         data['mod_loader'] = read_data['Loader']
         data['game_version'] = read_data['Version']
         data['directory'] = read_data['Directory']
-        data['mods'] = extractNestedStrings(read_data['Mods'])
+        data['mod_urls'] = extractNestedStrings(read_data['Mods'])
         attribute_types = {
             "name": str,
             "enabled": bool,
             "mod_loader": str,
             "game_version": str,
             "directory": str,
-            "mods": list,
+            "mod_urls": list,
         }
         verifyAttributeTypes(data, attribute_types)
         logger.debug(f'    Loaded instance file.')
@@ -270,16 +382,8 @@ def loadInstanceFile(path: Path) -> Instance | None:
         raise e
 
 def loadInstances(instances_dir: str) -> list[Instance]:
-    try:
-        logger.info(f'LOADING INSTANCES...')
-        enabled_instances = []
-        if not os.path.exists(instances_dir):
-            logger.debug(f'Creating folder "{instances_dir}"')
-            os.makedirs(instances_dir)
-            logger.debug(f'Created folder "{instances_dir}".')
-    except Exception as e:
-        logger.error(f'An error occured while creating folder "{instances_dir}" due to {repr(e)}')
-        raise e
+    logger.info(f'LOADING INSTANCES...')
+    enabled_instances = []
     try:
         for instance_file in [file for file in os.listdir(instances_dir) if file.endswith('.yaml')]:
             instance_path = os.path.join(instances_dir, instance_file)
@@ -292,6 +396,8 @@ def loadInstances(instances_dir: str) -> list[Instance]:
             else:
                 logger.info(f'    Ignoring disabled instance "{instance_name}"')
         logger.info(f'LOADED INSTANCES.')
+        if len(enabled_instances) == 0:
+            return None
         return enabled_instances
     except Exception as e:
         logger.error(f'An error occured while loading instance files due to {repr(e)}')
@@ -361,43 +467,63 @@ def loadInstances(instances_dir: str) -> list[Instance]:
 #                    logger.warning(f'Could not copy "{downloaded_file_path}" into "{instance_dir}": {e}')
 #                    continue
 
-def updateMods(mods_set: dict, config: Configuration) -> None:
+def updateMods(instances: typing.List[Instance], config: Configuration) -> None:
     logger.info('UPDATING MODS')
-    mods_set = mods_set.dataset
     
-    try:
-        logger.info(f'Creating folders to download mods into...')
-        for game_version in mods_set:
-            for mod_loader in mods_set[game_version]:
-                path = os.path.join(config.downloads_folder, game_version, mod_loader)
-                createDir(path)
-    except Exception as e:
-        logger.exception(f'Could not create folder to download mods into due to {repr(e)}')
-        raise e
+    for instance in instances:
+        name = instance.name
+        mod_loader = instance.mod_loader
+        game_version = instance.game_version
+        directory = instance.directory
+        mod_urls = instance.mod_urls
+        
+        #logger.debug(dict(vars(instance).items()))
+        
+        for mod_url in mod_urls:
+            mod_url = urlparse(mod_url)
+            
+            match mod_url.netloc:
+                case 'modrinth.com':
+                    Modrinth.Mod(mod_url, game_version, mod_loader).download(directory)
+                    pass
+                case _:
+                    logger.warning(f'    Cannot update {mod_url.geturl()}. Script cannot currently handle URLs from {mod_url.netloc}.')
+        
+    #mods_set = mods_set.dataset
+    #
+    #try:
+    #    logger.info(f'Creating folders to download mods into...')
+    #    for game_version in mods_set:
+    #        for mod_loader in mods_set[game_version]:
+    #            path = os.path.join(config.downloads_folder, game_version, mod_loader)
+    #            createDir(path)
+    #except Exception as e:
+    #    logger.exception(f'Could not create folder to download mods into due to {repr(e)}')
+    #    raise e
     
-    for game_version in mods_set:
-        for loader in mods_set[game_version]:
-            for mod_url in mods_set[game_version][loader]:
-                dirs = mods_set[game_version][loader][mod_url]
-                url = urlparse(mod_url)
-                netloc = url.netloc
-                #logger.debug(f'{url = }')
-                #logger.debug(f'{netloc = }')
-                #logger.debug(f'{game_version = }, {loader = }, {mod_url = }, {dirs = }')
-                
-                match netloc:
-                    case 'modrinth.com':
-                        pass
-                        mod = Modrinth.Mod(url, game_version)
-                        logger.debug(f'{str(mod) = }')
-                        #downloadModrinthMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs)
-                    case 'curseforge.com':
-                        pass
-                        #downloadCurseforgeMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs, config['CurseForge API Key'])
-                    case _:
-                        logger.warning(f'This script cannot handle urls from {netloc}. If you wish to be able to use this site, request it on the GitHub page!')
-                        pass
-    logger.info('DONE UPDATING MODS')
+    #for game_version in mods_set:
+    #    for loader in mods_set[game_version]:
+    #        for mod_url in mods_set[game_version][loader]:
+    #            dirs = mods_set[game_version][loader][mod_url]
+    #            url = urlparse(mod_url)
+    #            netloc = url.netloc
+    #            #logger.debug(f'{url = }')
+    #            #logger.debug(f'{netloc = }')
+    #            #logger.debug(f'{game_version = }, {loader = }, {mod_url = }, {dirs = }')
+    #            
+    #            match netloc:
+    #                case 'modrinth.com':
+    #                    pass
+    #                    mod = Modrinth.Mod(url, game_version)
+    #                    logger.debug(f'{str(mod) = }')
+    #                    #downloadModrinthMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs)
+    #                case 'curseforge.com':
+    #                    pass
+    #                    #downloadCurseforgeMod(mod_id, mod_loader, minecraft_version, mod_version, config['Downloads Folder'], instance_dirs, config['CurseForge API Key'])
+    #                case _:
+    #                    logger.warning(f'This script cannot handle urls from {netloc}. If you wish to be able to use this site, request it on the GitHub page!')
+    #                    pass
+    #logger.info('DONE UPDATING MODS')
 
 #def deleteDuplicateMods(instances: list[Instance]) -> None: # TODO Rework this to work with class
 #    logger.info(f'DELETING OUTDATED MODS')
@@ -446,28 +572,29 @@ def updateMods(mods_set: dict, config: Configuration) -> None:
 def main():
     config = loadConfig()
     
+    createDir(config.instances_folder)
+    
     #logger.debug(f'Config: {config}')
     
     if config.check_for_updates: checkForUpdate()
     
-    instances = loadInstances(config.instances_folder)
+    enabled_instances = loadInstances(config.instances_folder)
     #for instance in instances: logger.debug(f'Instance: {instance}')
     
-    mods_set = ModsSet(instances)
+    #mods_set = ModsSet(instances)
     #logger.debug(f'{str(mods_set) = }')
     
-    if len(instances) == 0:
-        logger.info(f'No instances exist!')
+    if enabled_instances is None:
+        logger.info(f'No enabled instances exist!')
     else:
-        updateMods(mods_set, config)
+        updateMods(enabled_instances, config)
         #deleteDuplicateMods(instances)
 
 if __name__ == '__main__':
-    if os.path.exists('latest.log'):
-        open('latest.log', 'w').close() # Clear latest.log if it exists
+    if os.path.exists('latest.log'): open('latest.log', 'w').close() # Clear latest.log if it exists
     
     logging.basicConfig(
-        level = logging.INFO,
+        level = logging.DEBUG,
         format = '%(asctime)s.%(msecs)03d %(levelname)s: %(message)s',
         datefmt = '%Y/%m/%d %H:%M:%S',
         encoding = 'utf-8',
