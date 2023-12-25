@@ -45,25 +45,6 @@ class Instance:
     def __str__(self):
         return str(vars(self))
 
-#class ModsSet:
-#    def __init__(self, instances: list[Instance]):
-#        self.instances = instances
-#        self.dataset = self.generate_dataset()
-#    
-#    def generate_dataset(self) -> typing.Dict[str, typing.Dict[str, typing.Dict[str, typing.List[Path]]]]:
-#        mod_set = {}
-#        for instance in self.instances:
-#            for mod in instance.mods:
-#                game_version, mod_loader, directory = instance.game_version, instance.mod_loader, instance.directory
-#                mod_set.setdefault(game_version, {}).setdefault(mod_loader, {}).setdefault(mod, [])
-#                if directory not in mod_set[game_version][mod_loader][mod]: mod_set[game_version][mod_loader][mod].append(directory)
-#        return mod_set
-#    
-#    def __str__(self):
-#        return str(self.dataset)
-
-ModLoaders = typing.Literal['fabric', 'forge']
-
 class Modrinth:
     url_header = {'User-Agent': 'RandomGgames/RMMUD (randomggamesofficial@gmail.com)'}
     _instances = {}
@@ -73,7 +54,7 @@ class Modrinth:
             raise ValueError('URL link does not go to modrinth.com')
     
     class Mod:
-        def __new__(cls, url: urlparse, game_version: str, mod_loader: ModLoaders):
+        def __new__(cls, url: urlparse, game_version: str, mod_loader: str):
             isntance_key = (url.geturl(), game_version, mod_loader)
             existing_instance = Modrinth._instances.get(isntance_key)
             
@@ -85,7 +66,7 @@ class Modrinth:
                 Modrinth._instances[isntance_key] = new_instance
                 return new_instance
         
-        def __init__(self, url: urlparse, game_version: str, mod_loader: ModLoaders):
+        def __init__(self, url: urlparse, game_version: str, mod_loader: str):
             if self._already_exists: return
             
             self.url = url
