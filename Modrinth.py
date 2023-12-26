@@ -52,7 +52,6 @@ class Modrinth:
                     self.slug = url_path_split[1]
     
     def _get_project(self):
-        #if hasattr(self, 'url'):
         base_url = 'https://api.modrinth.com/v2/project'
         url = f'{base_url}/{self.slug}'
         response = requests.get(url, headers = Modrinth.url_header).json()
@@ -62,7 +61,6 @@ class Modrinth:
     
     def _get_projects(self):
         base_url = 'https://api.modrinth.com/v2/projects'
-        #if hasattr(self, 'slugs'):
         formatted_ids = ', '.join(f'"{id}"' for id in self.slugs)
         search_param = f'?ids=[{formatted_ids}]'
         url = f'{base_url}{search_param}'
@@ -72,7 +70,6 @@ class Modrinth:
             return self.projects
     
     def _list_versions(self):
-        #if hasattr(self, 'slug'):
         url = f'https://api.modrinth.com/v2/project/{self.slug}/version'
         response = requests.get(url, headers = Modrinth.url_header).json()
         if response:
@@ -80,7 +77,6 @@ class Modrinth:
             return self.versions_list
     
     def _get_versions(self):
-        #if hasattr(self, 'slug'):
         url = f'https://api.modrinth.com/v2/project/{self.slug}/version'
         if hasattr(self, 'loader') and hasattr(self, 'game_version'):
             url = f'{url}?loaders=["{self.loader}"]&game_versions=["{self.game_version}"]'
@@ -92,9 +88,38 @@ class Modrinth:
         if response:
             self.versions_list = response
             return self.versions_list
+        
+        base_url = urlparse(f'https://api.modrinth.com/v2/project/{self.slug}/version')
+        if self.mod_version is None:
+            query = f'loaders=["{self.mod_loader}"]&game_versions=["{self.game_version}"]'
+        else:
+            query = f'loaders=["{self.mod_loader}"]'
+        print(base_url.geturl())
+        print(query)
+        url = urlunparse(base_url._replace(query = query))
+        print(url)
+        response = requests.get(url, headers = Modrinth.url_header).json()
+        if self.mod_version is None:
+            desired_mod_version = sorted(response, key = lambda x: datetime.fromisoformat(x['date_published'][:-1]), reverse = True)
+            if len(desired_mod_version) == 0:
+                return None
+            else:
+                return desired_mod_version[0]
+        else:
+            return next((v for v in response if v['version_number'] == self.mod_version), None)
     
     def download(self) -> None:
-        pass
+        if not hasattr(self, 'mod_file'):
+            if not hasattr(self, 'versions_list'):
+                self._get_versions()
+                mod_version_files = self.versions_list['files']
+                if any(file['primary'] == True in file for file in mod_version_files):
+                    mod_version_files = [file for file in mod_version_files if file['primary'] == True]
+                mod_version_file = mod_version_files[0]
+                
+                self.file_name = mod_version_file['filename']
+                self.download_url = mod_version_file['url']
+                self.mod_file = requests.get(self.download_url, headers = Modrinth.url_header).content
 
 Modrinth(url = urlparse('https://modrinth.com/mod/fabric-api'), game_version = '1.20.2', loader = 'fabric').download(Path('./test'))
 pass
@@ -110,8 +135,6 @@ pass
     #    url = urlunparse(base_url._replace(query = query))
     #    print(url)
     #    response = requests.get(url, headers = Modrinth.url_header).json()
-            
-    
     
     #class Mod:
     #    def __new__(cls, url: urlparse, game_version: str, mod_loader: str):
