@@ -26,12 +26,21 @@ logging.basicConfig(
         logging.StreamHandler(sys.stdout)
     ]
 )
-#logging.getLogger('requests').setLevel(logging.WARNING)
-#logging.getLogger('urllib3').setLevel(logging.WARNING)
 
 class Modrinth:
     url_header = {'User-Agent': 'RandomGgames/RMMUD (randomggamesofficial@gmail.com)'}
     _instances = {}
+    
+    def __new__(cls, **kwargs):
+        isntance_key = tuple(kwargs.values())
+        existing_instance = Modrinth._instances.get(isntance_key)
+        
+        if existing_instance:
+            return existing_instance
+        else:
+            new_instance = super().__new__(cls)
+            Modrinth._instances[isntance_key] = new_instance
+            return new_instance
     
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
@@ -82,8 +91,10 @@ class Modrinth:
             if response:
                 self.versions_list = response
                 return self.versions_list
-
-versions = Modrinth(url = urlparse('https://modrinth.com/mod/fabric-api'), game_version = '1.20.2', loader = 'fabric')._get_versions()
+    
+    def download():
+        
+Modrinth(url = urlparse('https://modrinth.com/mod/fabric-api'), game_version = '1.20.2', loader = 'fabric').download(Path('./test'))
 pass
 
     #def get_project(self, slug: str) -> dict:
