@@ -48,52 +48,54 @@ class Modrinth:
             match key:
                 case 'url':
                     url_path_split = self.url.path.split('/')[1:]
+                    self.project_type = url_path_split[0]
                     self.slug = url_path_split[1]
     
     def _get_project(self):
-        if hasattr(self, 'url'):
-            base_url = 'https://api.modrinth.com/v2/project'
-            url = f'{base_url}/{self.slug}'
-            response = requests.get(url, headers = Modrinth.url_header).json()
-            if response:
-                self.project = response
-                return self.project
+        #if hasattr(self, 'url'):
+        base_url = 'https://api.modrinth.com/v2/project'
+        url = f'{base_url}/{self.slug}'
+        response = requests.get(url, headers = Modrinth.url_header).json()
+        if response:
+            self.project = response
+            return self.project
     
     def _get_projects(self):
         base_url = 'https://api.modrinth.com/v2/projects'
-        if hasattr(self, 'slugs'):
-            formatted_ids = ', '.join(f'"{id}"' for id in self.slugs)
-            search_param = f'?ids=[{formatted_ids}]'
-            url = f'{base_url}{search_param}'
-            response = requests.get(url, headers = Modrinth.url_header).json()
-            if response:
-                self.projects = response
-                return self.projects
+        #if hasattr(self, 'slugs'):
+        formatted_ids = ', '.join(f'"{id}"' for id in self.slugs)
+        search_param = f'?ids=[{formatted_ids}]'
+        url = f'{base_url}{search_param}'
+        response = requests.get(url, headers = Modrinth.url_header).json()
+        if response:
+            self.projects = response
+            return self.projects
     
     def _list_versions(self):
-        if hasattr(self, 'slug'):
-            url = f'https://api.modrinth.com/v2/project/{self.slug}/version'
-            response = requests.get(url, headers = Modrinth.url_header).json()
-            if response:
-                self.versions_list = response
-                return self.versions_list
+        #if hasattr(self, 'slug'):
+        url = f'https://api.modrinth.com/v2/project/{self.slug}/version'
+        response = requests.get(url, headers = Modrinth.url_header).json()
+        if response:
+            self.versions_list = response
+            return self.versions_list
     
     def _get_versions(self):
-        if hasattr(self, 'slug'):
-            url = f'https://api.modrinth.com/v2/project/{self.slug}/version'
-            if hasattr(self, 'loader') and hasattr(self, 'game_version'):
-                url = f'{url}?loaders=["{self.loader}"]&game_versions=["{self.game_version}"]'
-            elif hasattr(self, 'loader'):
-                url = f'{url}?loaders=["{self.loader}"]'
-            elif hasattr(self, 'game_version'):
-                url = f'{url}?game_versions=["{self.game_version}"]'
-            response = requests.get(url, headers = Modrinth.url_header).json()
-            if response:
-                self.versions_list = response
-                return self.versions_list
+        #if hasattr(self, 'slug'):
+        url = f'https://api.modrinth.com/v2/project/{self.slug}/version'
+        if hasattr(self, 'loader') and hasattr(self, 'game_version'):
+            url = f'{url}?loaders=["{self.loader}"]&game_versions=["{self.game_version}"]'
+        elif hasattr(self, 'loader'):
+            url = f'{url}?loaders=["{self.loader}"]'
+        elif hasattr(self, 'game_version'):
+            url = f'{url}?game_versions=["{self.game_version}"]'
+        response = requests.get(url, headers = Modrinth.url_header).json()
+        if response:
+            self.versions_list = response
+            return self.versions_list
     
-    def download():
-        
+    def download(self) -> None:
+        pass
+
 Modrinth(url = urlparse('https://modrinth.com/mod/fabric-api'), game_version = '1.20.2', loader = 'fabric').download(Path('./test'))
 pass
 
