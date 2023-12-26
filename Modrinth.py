@@ -85,28 +85,18 @@ class Modrinth:
         elif hasattr(self, 'game_version'):
             url = f'{url}?game_versions=["{self.game_version}"]'
         response = requests.get(url, headers = Modrinth.url_header).json()
-        if response:
-            self.versions_list = response
-            return self.versions_list
-        
-        base_url = urlparse(f'https://api.modrinth.com/v2/project/{self.slug}/version')
-        if self.mod_version is None:
-            query = f'loaders=["{self.mod_loader}"]&game_versions=["{self.game_version}"]'
-        else:
-            query = f'loaders=["{self.mod_loader}"]'
-        print(base_url.geturl())
-        print(query)
-        url = urlunparse(base_url._replace(query = query))
-        print(url)
-        response = requests.get(url, headers = Modrinth.url_header).json()
-        if self.mod_version is None:
-            desired_mod_version = sorted(response, key = lambda x: datetime.fromisoformat(x['date_published'][:-1]), reverse = True)
-            if len(desired_mod_version) == 0:
+        self.versions_list = response
+        return self.versions_list
+    
+    def _get_version(self):
+        if hasattr(self, 'specific_mod_version'):
+            sorted_versions = sorted(self.versions_list, key = lambda x: datetime.fromisoformat(x['date_published'][:-1]), reverse = True)
+            if len(sorted_versions) == 0:
                 return None
             else:
-                return desired_mod_version[0]
+                return sorted_versions[0]
         else:
-            return next((v for v in response if v['version_number'] == self.mod_version), None)
+            return next((v for v in self.versions_list if v['version_number'] == self.mod_version), None)
     
     def download(self) -> None:
         if not hasattr(self, 'mod_file'):
