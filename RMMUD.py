@@ -50,7 +50,18 @@ class Modrinth:
     _instances = {}
     
     def __new__(cls, **kwargs):
-        logger.debug(f'Creating new object...')
+        for key, value in kwargs.items():
+            match key:
+                case 'url':
+                    url_path_split = [i for i in value.path.split('/') if i != '']
+                    if len(url_path_split) >= 2:
+                        slug = url_path_split[1]
+                case 'game_version':
+                    game_version = value
+                case 'instance_name':
+                    instance_name = value
+        logger.info(f'Updating {slug} for {game_version} in instance "{instance_name}"')
+        
         isntance_key = tuple(kwargs.values())
         existing_instance = Modrinth._instances.get(isntance_key)
         if existing_instance:
@@ -64,7 +75,6 @@ class Modrinth:
         if hasattr(self, 'already_exists'):
             return
         
-        logger.debug(f'Initializing object...')
         for key, value in kwargs.items():
             setattr(self, key, value)
             match key:
@@ -72,16 +82,17 @@ class Modrinth:
                     url_path_split = [i for i in self.url.path.split('/') if i != '']
                     if len(url_path_split) >= 2:
                         self.project_type = url_path_split[0]
+                        self.slug = url_path_split[1]
                         match self.project_type:
                             case 'mod':
                                 self.sub_folder = 'mods'
+                            case 'plugin':
+                                self.sub_folder = 'mods'
                             case _: # Add more types here for shaders, maps, resource packs, etc...
                                 self.sub_folder = None
-                        self.slug = url_path_split[1]
         self.already_exists = True
     
     def _get_project(self):
-        logger.debug(f'Getting project...')
         base_url = 'https://api.modrinth.com/v2/project'
         url = f'{base_url}/{self.slug}'
         response = requests.get(url, headers = Modrinth.url_header)
@@ -92,7 +103,6 @@ class Modrinth:
             return None
     
     def _get_projects(self):
-        logger.debug(f'Getting projects...')
         base_url = 'https://api.modrinth.com/v2/projects'
         formatted_ids = ', '.join(f'"{id}"' for id in self.slugs)
         search_param = f'?ids=[{formatted_ids}]'
@@ -105,7 +115,6 @@ class Modrinth:
             return None
     
     def _get_versions(self):
-        logger.debug(f'Getting versions...')
         url = f'https://api.modrinth.com/v2/project/{self.slug}/version'
         if hasattr(self, 'loader') and hasattr(self, 'game_version'):
             url = f'{url}?loaders=["{self.loader}"]&game_versions=["{self.game_version}"]'
@@ -122,7 +131,6 @@ class Modrinth:
             return None
     
     def _get_desired_version(self):
-        logger.debug(f'Getting desired version...')
         if hasattr(self, 'specific_mod_version'):
             version = next((v for v in self.versions_list if v['version_number'] == self.specific_mod_version), None)
             setattr(self, 'version', version)
@@ -135,7 +143,6 @@ class Modrinth:
         return self.version
     
     def _get_file(self):
-        logger.debug(f'Getting file...')
         if hasattr(self, 'version'):
             if self.version:
                 version_files = self.version['files']
@@ -152,8 +159,7 @@ class Modrinth:
                 self.download_url = None
                 self.mod_file = None
     
-    def download(self, instance_dir: Path) -> None:
-        logger.debug(f'Downloading file...')
+    def download(self) -> None:
         if not hasattr(self, 'versions_list'):
             self._get_versions()
         if not hasattr(self, 'version'):
@@ -161,16 +167,15 @@ class Modrinth:
         if not hasattr(self, 'mod_file'):
             self._get_file()
         
-        logger.info(f'Updating {self.slug} for {self.game_version} in "{instance_dir}"')
         if self.mod_file is None:
             logger.warning(f'Could not find {self.slug} for {self.game_version}.')
             return
         
-        if not os.path.exists(instance_dir):
+        if not os.path.exists(self.instance_dir):
             class DirectoryNotFoundError(FileNotFoundError): pass
-            raise DirectoryNotFoundError(f'The minecraft directory "{instance_dir}" cannot be found.')
+            raise DirectoryNotFoundError(f'The minecraft directory "{self.instance_dir}" cannot be found.')
         
-        dir_path = os.path.join(instance_dir, self.sub_folder)
+        dir_path = os.path.join(self.instance_dir, self.sub_folder)
         if not os.path.exists(dir_path): create_dir(dir_path)
         file_path = os.path.join(dir_path, self.file_name)
         
@@ -179,7 +184,9 @@ class Modrinth:
             delete_file(file_path)
             logger.info(f'Deleted "{file_path}".')
         
-        if not os.path.exists(file_path):
+        if os.path.exists(file_path):
+            logger.info(f'Mod is already up to date.')
+        else:
             with open(file_path, 'wb') as f:
                 f.write(self.mod_file)
                 logger.info(f'Downloaded "{self.file_name}" into "{dir_path}".')
@@ -437,23 +444,15 @@ def update_mods(instances: typing.List[Instance], config: Configuration) -> None
     logger.info('UPDATING MODS...')
     
     for instance in instances:
-        name = instance.name
-        mod_loader = instance.mod_loader
-        game_version = instance.game_version
-        directory = instance.directory
-        mod_urls = instance.mod_urls
-        
-        #logger.debug(dict(vars(instance).items()))
-        
-        for mod_url in mod_urls:
+        for mod_url in instance.mod_urls:
             mod_url = urlparse(mod_url)
             netlock = mod_url.netloc
             
             match netlock:
                 case 'modrinth.com' | 'www.modrinth.com':
-                    Modrinth.Mod(mod_url, game_version, mod_loader.lower()).download(directory)
-                case 'curseforge.com' | 'www.curseforge.com':
-                    CurseForge.Mod(mod_url, game_version, mod_loader.lower()).download(directory)
+                    Modrinth(instance_name = instance.name, url = mod_url, game_version = instance.game_version, mod_loader = instance.mod_loader.lower(), instance_dir = instance.directory).download()
+                #case 'curseforge.com' | 'www.curseforge.com':
+                #    CurseForge.Mod(mod_url, game_version, mod_loader.lower()).download(directory)
                 case _:
                     logger.warning(f'Cannot update {mod_url.geturl()}. Script cannot currently handle URLs from {mod_url.netloc}.')
         
