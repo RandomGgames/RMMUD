@@ -116,7 +116,7 @@ class Modrinth:
     
     def _get_versions(self):
         url = f'https://api.modrinth.com/v2/project/{self.slug}/version'
-        if hasattr(self, 'loader') and hasattr(self, 'game_version'):
+        if hasattr(self, 'mod_loader') and hasattr(self, 'game_version'):
             url = f'{url}?loaders=["{self.mod_loader}"]&game_versions=["{self.game_version}"]'
         elif hasattr(self, 'mod_loader'):
             url = f'{url}?loaders=["{self.mod_loader}"]'
