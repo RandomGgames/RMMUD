@@ -117,9 +117,9 @@ class Modrinth:
     def _get_versions(self):
         url = f'https://api.modrinth.com/v2/project/{self.slug}/version'
         if hasattr(self, 'loader') and hasattr(self, 'game_version'):
-            url = f'{url}?loaders=["{self.loader}"]&game_versions=["{self.game_version}"]'
-        elif hasattr(self, 'loader'):
-            url = f'{url}?loaders=["{self.loader}"]'
+            url = f'{url}?loaders=["{self.mod_loader}"]&game_versions=["{self.game_version}"]'
+        elif hasattr(self, 'mod_loader'):
+            url = f'{url}?loaders=["{self.mod_loader}"]'
         elif hasattr(self, 'game_version'):
             url = f'{url}?game_versions=["{self.game_version}"]'
         response = requests.get(url, headers = Modrinth.url_header)
@@ -557,6 +557,8 @@ def main():
     else:
         update_mods(enabled_instances, config)
         #deleteDuplicateMods(instances)
+    
+    logger.info('DONE!')
 
 if __name__ == '__main__':
     if os.path.exists('latest.log'): open('latest.log', 'w').close() # Clear latest.log if it exists
