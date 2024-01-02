@@ -2,3 +2,4 @@
 .vscode/launch.json
 *.pyc
 latest.log
+*.log
