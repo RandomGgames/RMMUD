@@ -564,7 +564,7 @@ if __name__ == '__main__':
     if os.path.exists('latest.log'): open('latest.log', 'w').close() # Clear latest.log if it exists
     
     logging.basicConfig(
-        level = logging.DEBUG,
+        level = logging.INFO,
         format = '%(asctime)s.%(msecs)03d %(levelname)s: %(message)s',
         datefmt = '%Y/%m/%d %H:%M:%S',
         encoding = 'utf-8',
