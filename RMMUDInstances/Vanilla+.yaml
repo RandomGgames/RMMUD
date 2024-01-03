@@ -1,4 +1,4 @@
-Enabled: false
+Enabled: true
 Loader: Fabric
 Version: "1.20.4"
 Directory: 'C:\Users\giano\AppData\Roaming\.minecraft'
@@ -13,6 +13,7 @@ Mods:
     - https://modrinth.com/mod/fabric-language-kotlin
     - https://modrinth.com/mod/forge-config-api-port
     - https://modrinth.com/mod/iceberg
+    - https://modrinth.com/mod/jamlib
     - https://modrinth.com/mod/libipn
     - https://modrinth.com/mod/prism-lib
   Optimizations and Fixes:
